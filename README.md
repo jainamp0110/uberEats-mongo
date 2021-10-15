@@ -1,2 +1,2 @@
-# uberEats-mongo
-Lab2
+# uberEats-clone
+CMPE 273 Uber Eats Project

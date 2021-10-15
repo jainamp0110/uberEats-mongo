@@ -1,0 +1,25 @@
+.home {
+    display: flex;
+    height: 50vh;
+    flex-direction: column;
+    justify-content: center;
+}
+
+
+.home-section-1 {
+    display: 'flex';
+    justify-content: 'space-around';
+    width: 40vw;
+}
+
+.flexbox-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.home-button {
+    display: block;
+    width: 20vh;
+}
