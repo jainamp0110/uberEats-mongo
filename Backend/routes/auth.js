@@ -1,8 +1,3 @@
-/* eslint-disable consistent-return */
-/* eslint-disable camelcase */
-/* eslint-disable no-unused-vars */
-/// Authentication
-
 const express = require('express');
 
 const router = express.Router();
