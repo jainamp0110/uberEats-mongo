@@ -19,7 +19,21 @@ router.post('/login', customerValidationRules(), validator, customerLogin);
 /// Restuarant Registration API
 router.post('/reslogin', restaurantValidationRules(), validator, restaurantLogin);
 
-/// Restaurant Register API
-router.post('/resregister', restaurantValidationRules(), validator, createRestaurant);
+/**
+ * @typedef RegisterRestaurant
+ * @property {string} email.required 
+ * @property {string} password.required
+ * @property {string} name.required
+ */
+
+/**
+ * @route POST /auth/resregister
+ * @group Register - Registration
+ * @param {RegisterRestaurant.model} RegisterRestaurant.body.required 
+ * @returns {object} 201 - An array of user info
+ * @returns {Error}  400 - Bad request 
+ * @returns {Error} 409 - Restaurant already exist
+ */
+router.post('/resregister',restaurantValidationRules(), validator, createRestaurant);
 
 module.exports = router;

@@ -29,16 +29,16 @@ const restaurantValidationRules = () => [
   body('email').optional({ nullable: true }).isEmail().withMessage('Enter Valid Email'),
   body('password').optional({ nullable: true }).isString().withMessage('Enter Valid Password'),
   body('name').optional({ nullable: true }).isString().withMessage('Enter Valid Email'),
-  body('address_line')
+  body('address')
     .optional({ nullable: true })
     .isString()
     .withMessage('Enter Valid Address Line'),
   body('city').optional({ nullable: true }).isString().withMessage('Enter Valid City Name'),
   body('state').optional({ nullable: true }).isString().withMessage('Enter Valid State'),
   body('zipcode').optional({ nullable: true }).isNumeric().withMessage('Enter Valid Zipcode'),
-  body('del_type').optional({ nullable: true }).isString().withMessage('Enter Valid Delivery Type'),
-  body('link').optional({ nullable: true }).isString().withMessage('Enter Valid Image Link'),
-  body('contact')
+  body('deliveryType').optional({ nullable: true }).isString().withMessage('Enter Valid Delivery Type'),
+  body('imageLink').optional({ nullable: true }).isString().withMessage('Enter Valid Image Link'),
+  body('contactNum')
     .optional({ nullable: true })
     .isString()
     .custom((val) => {

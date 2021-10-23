@@ -2,6 +2,7 @@
 const jwt = require('jsonwebtoken');
 const { restaurants, customers } = require('../models/data.model');
 
+const Restaurant = require('../models/restaurant.model');
 function validateToken(req, res, next) {
   const token = req.headers.authorization;
   if (token) {
@@ -13,21 +14,20 @@ function validateToken(req, res, next) {
         return res.status(400).send('Incomplete Information');
       }
       if (data.role === 'restaurant') {
-        if (!(data.email && data.r_id)) {
+        if (!(data.email && data.id)) {
           return res.status(400).send('Incomplete Information');
         }
-        const rest = await restaurants.findOne({
-          where: {
-            r_email: data.email,
+        const rest = await Restaurant.findOne({
+            email: data.email,
           },
-        });
+        );
         if (!rest) {
           return res
             .status(209)
             .send('Permissions Required For accessing Restuarant');
         }
         req.headers.role = 'restaurant';
-        req.headers.id = data.r_id;
+        req.headers.id = data.id;
         next();
       } else if (data.role === 'customer') {
         if (!(data.email && data.c_id)) {

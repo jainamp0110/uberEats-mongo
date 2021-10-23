@@ -1,10 +1,5 @@
-/* eslint-disable consistent-return */
-/* eslint-disable camelcase */
-/* eslint-disable no-unused-vars */
-/* eslint-disable indent */
-/// Authentication
-
 const express = require('express');
+
 const {
   updateRestaurant,
   deleteRestaurant,
@@ -15,6 +10,7 @@ const {
   getRestaurantBySearch,
 } = require('../controllers/restaurant');
 const { restaurantValidationRules, validator } = require('../controllers/validator');
+
 
 const router = express.Router();
 

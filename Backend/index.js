@@ -32,7 +32,7 @@ const options = {
       title: 'Uber Eats',
       version: '1.0.0',
     },
-    host: 'localhost:3001',
+    host: 'localhost:8080',
     basePath: '/',
     produces: ['application/json'],
     schemes: ['http', 'https'],
@@ -54,7 +54,7 @@ expressSwagger(options);
 app.use('/auth', authRouter);
 app.use(validateToken);
 
-app.use('/restaurant', restaurant);
+app.use('/restaurants', restaurant);
 app.use('/dishes', dishes);
 app.use('/customers', customers);
 app.use('/cart', cart);
@@ -78,3 +78,5 @@ const impFunc = async () => {
     console.log(`Unable to start Server`);
   }
 };
+
+impFunc();

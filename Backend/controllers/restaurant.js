@@ -1,5 +1,5 @@
-/* eslint-disable consistent-return */
-/* eslint-disable camelcase */
+const Restaurant = require('../models/restaurant.model');
+
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const _ = require("underscore");
@@ -16,84 +16,34 @@ const {
 
 const createRestaurant = async (req, res) => {
   try {
-    const {
-      email,
-      password,
-      name,
-      city,
-      state,
-      desc,
-      contact,
-      dish_types,
-      del_type,
-      start,
-      end,
-    } = req.body;
-
     // Validate user input
-    if (!(name && email && password)) {
+    if (!(req.body.name && req.body.email && req.body.password)) {
       res.status(400).send({ error: "All input is required" });
     }
-    // check if Restaurant already exist
-    // Validate if user exist in our database
-    const oldRes = await restaurants.findOne({
-      where: {
-        r_email: email,
-      },
+    const oldRes = await Restaurant.findOne({
+      email: req.body.email,
     });
 
     if (oldRes) {
       res.status(409).send({ error: "Restaurant Already Exist. Please Login" });
     } else {
-      // Encrypt user password
-      const encryptedPassword = await bcrypt.hash(password, 10);
-      let token;
+      
+      req.body.password = await bcrypt.hash(req.body.password, 10);
+      const newRestaurant = new Restaurant(req.body);
 
-      const t = await sequelize.transaction();
-      try {
-        // const t = await sequelize.transaction()
-        const restaurant = await restaurants.create(
-          {
-            r_name: name,
-            r_email: email,
-            r_password: encryptedPassword,
-            r_address_line: req.body.address_line,
-            r_city: city,
-            r_state: state,
-            r_zipcode: req.body.zipcode,
-            r_desc: desc,
-            r_contact_no: contact,
-            r_delivery_type: del_type,
-            r_start: start,
-            r_end: end,
-          },
-          { transaction: t }
-        );
-        if (dish_types) {
-          const dishTypes = dish_types.map((ele) => ({
-            r_id: restaurant.r_id,
-            rdt_type: ele,
-          }));
-          await restaurant_dishtypes.bulkCreate(dishTypes, {
-            transaction: t,
-          });
-        }
-
-        token = jwt.sign(
-          { r_id: restaurant.r_id, email, role: "restaurant" },
-          "UberEats",
+      const newR = await newRestaurant.save();
+      console.log(newR);
+      const token = jwt.sign(
+          { id: newR._id, email: newR.email, role: 'restaurant' },
+          'UberEats',
           {
             expiresIn: "2h",
           }
         );
-        await t.commit();
         res.status(201).json({ token });
-      } catch (error) {
-        await t.rollback();
-        res.status(404).send(error);
-      }
     }
   } catch (err) {
+    console.log(err);
     res.status(404).send(err);
   }
 };
