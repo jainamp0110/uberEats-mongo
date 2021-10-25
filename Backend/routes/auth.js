@@ -16,7 +16,20 @@ router.post('/register', customerValidationRules(), validator, createCustomer);
 /// Customer Login API
 router.post('/login', customerValidationRules(), validator, customerLogin);
 
-/// Restuarant Registration API
+/**
+ * @typedef LoginRestaurant
+ * @property {string} email.required 
+ * @property {string} password.required
+ */
+
+/**
+ * @route POST /auth/reslogin
+ * @group Login
+ * @param {LoginRestaurant.model} LoginRestaurant.body.required 
+ * @returns {object} 201 - Login success with token
+ * @returns {Error}  400 - Bad request 
+ * @returns {Error} 409 - Email or Password Incorrect
+ */
 router.post('/reslogin', restaurantValidationRules(), validator, restaurantLogin);
 
 /**
@@ -28,7 +41,7 @@ router.post('/reslogin', restaurantValidationRules(), validator, restaurantLogin
 
 /**
  * @route POST /auth/resregister
- * @group Register - Registration
+ * @group Register
  * @param {RegisterRestaurant.model} RegisterRestaurant.body.required 
  * @returns {object} 201 - An array of user info
  * @returns {Error}  400 - Bad request 

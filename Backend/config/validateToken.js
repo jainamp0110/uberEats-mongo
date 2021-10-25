@@ -13,6 +13,7 @@ function validateToken(req, res, next) {
       if (!data.role) {
         return res.status(400).send('Incomplete Information');
       }
+      console.log(data.email,data.id);    
       if (data.role === 'restaurant') {
         if (!(data.email && data.id)) {
           return res.status(400).send('Incomplete Information');

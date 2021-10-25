@@ -27,6 +27,15 @@ const RestaurantSchema = mongoose.Schema({
     address: {
         type: String,
     },
+    startTime: {
+        type: Date,
+    },
+    endTime: {
+        type: Date,
+    },
+    zipcode: {
+        type: String,
+    },
     description: {
         type: String,
     },

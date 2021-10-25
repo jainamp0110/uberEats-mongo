@@ -14,7 +14,7 @@ sequelize.sync();
 
 const authRouter = require('./routes/auth');
 const { validateToken } = require('./config/validateToken');
-const restaurant = require('./routes/restuarant');
+const restaurant = require('./routes/restuarant.route');
 const dishes = require('./routes/dishes');
 const customers = require('./routes/customers');
 const cart = require('./routes/cart');

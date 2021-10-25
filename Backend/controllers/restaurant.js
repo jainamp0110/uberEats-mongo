@@ -1,8 +1,10 @@
 const Restaurant = require('../models/restaurant.model');
 
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const _ = require("underscore");
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const _ = require('underscore');
+const mongoose = require('mongoose');
+
 const {
   restaurants,
   restaurant_dishtypes,
@@ -10,7 +12,7 @@ const {
   dishes,
   sequelize,
   restaurant_imgs,
-} = require("../models/data.model");
+} = require('../models/data.model');
 
 // const { body, validationResult } = require('express-validator');
 
@@ -18,14 +20,14 @@ const createRestaurant = async (req, res) => {
   try {
     // Validate user input
     if (!(req.body.name && req.body.email && req.body.password)) {
-      res.status(400).send({ error: "All input is required" });
+      res.status(400).send({ error: 'All input is required' });
     }
     const oldRes = await Restaurant.findOne({
       email: req.body.email,
     });
 
     if (oldRes) {
-      res.status(409).send({ error: "Restaurant Already Exist. Please Login" });
+      res.status(409).send({ error: 'Restaurant Already Exist. Please Login' });
     } else {
       
       req.body.password = await bcrypt.hash(req.body.password, 10);
@@ -37,7 +39,7 @@ const createRestaurant = async (req, res) => {
           { id: newR._id, email: newR.email, role: 'restaurant' },
           'UberEats',
           {
-            expiresIn: "2h",
+            expiresIn: '2h',
           }
         );
         res.status(201).json({ token });
@@ -49,116 +51,95 @@ const createRestaurant = async (req, res) => {
 };
 
 const restaurantLogin = async (req, res) => {
-  const { email, password } = req.body;
 
-  if (!(email && password)) res.status(400).send("All input is required");
+  if (!(req.body.email && req.body.password)) 
+    res.status(400).send('All input is required');
 
-  const rest = await restaurants.findOne({
-    where: {
-      r_email: email,
-    },
-  });
-
+  const rest = await Restaurant.findOne({
+      email: req.body.email,
+  }).select('password');
+  // console.log(rest);
   if (!rest) {
-    res.status(409).send("Restaurant does not exist");
+    res.status(409).send('Restaurant does not exist');
   } else {
-    bcrypt.compare(password, rest.r_password, (err, result) => {
+    bcrypt.compare(req.body.password, rest.password, (err, result) => {
       if (err) {
         // handle error
-        res.status(409).send("Error Verifying details!!!");
+        res.status(409).send('Error Verifying details!!!');
       }
       if (result) {
         // Send JWT
         // Create token
+        console.log(rest);
         const token = jwt.sign(
-          { r_id: rest.r_id, email, role: "restaurant" },
-          "UberEats",
+          { id: rest._id, email:req.body.email, role: 'restaurant' },
+          'UberEats',
           {
-            expiresIn: "2h",
+            expiresIn: '2h',
           }
         );
-        // save customer token
+        console.log(token);
         rest.token = token;
         return res.status(201).json({ token });
       }
-      // response is OutgoingMessage object that server response http request
-      return res.json({ success: false, message: "passwords do not match" });
+      return res.json({ success: false, message: 'passwords do not match' });
     });
   }
 };
 
 const updateRestaurant = async (req, res) => {
+  console.log('entered nhereree');
+
   try {
-    const restId = req.params.rid;
-    const imgLink = req.body.link;
-    const rest = await restaurants.findOne({
-      where: {
-        r_id: restId,
-      },
+    console.log('entered');
+    const rest = await Restaurant.findOne({
+        _id: req.params.rid,
     });
 
-    if (!rest) return res.status(404).send("Restaurant Not Found");
+    if (!rest) return res.status(404).send('Restaurant Not Found');
 
-    if (req.body.email && req.body.email !== rest.r_email) {
-      const checkRest = await restaurants.findOne({
-        where: {
-          r_email: req.body.email,
-        },
+    if (req.body.email && req.body.email !== rest.email) {
+      const checkRest = await Restaurant.findOne({
+          email: req.body.email,
       });
 
       if (checkRest) {
         return res
           .status(403)
-          .send("Restaurant already exist with given email");
+          .send('Restaurant already exist with given email');
       }
     }
-    const t = await sequelize.transaction();
 
-    try {
-      await restaurants.update(
+    await Restaurant.findOneAndUpdate(
+      {
+        _id: mongoose.Types.ObjectId(String(req.params.rid)),
+      },
+      {
+        $set: req.body,
+      },
+    );
+
+    if (req.body.type && req.body.type.length > 0) {
+      await Restaurant.findOneAndUpdate(
         {
-          r_name: req.body.name,
-          r_city: req.body.city,
-          r_state: req.body.state,
-          r_address_line: req.body.address_line,
-          r_zipcode: req.body.zipcode,
-          r_desc: req.body.desc,
-          r_contact_no: req.body.contact,
-          r_delivery_type: req.body.delivery_type,
-          r_start: req.body.start,
-          r_end: req.body.end,
+          _id: mongoose.Types.ObjectId(String(req.params.rid)),
         },
         {
-          returning: true,
-          where: { r_id: restId },
+          $set: {type: []},
         },
-        { transaction: t }
       );
-
-      if (req.body.dish_types) {
-        const dishTypes = req.body.dish_types.map((ele) => ({
-          r_id: restId,
-          rdt_type: ele,
-        }));
-
-        await restaurant_dishtypes.destroy({
-          where: {
-            r_id: restId,
-          },
-          transaction: t,
-        });
-
-        const updated = await restaurant_dishtypes.bulkCreate(dishTypes, {
-          transaction: t,
-        });
-      }
-
-      await t.commit();
-      return res.status(200).send({ message: "Restaurant Updated" });
-    } catch (err) {
-      await t.rollback();
-      return res.status(404).send(err);
+      
+      await Restaurant.findOneAndUpdate(
+        {
+          _id: mongoose.Types.ObjectId(String(req.params.rid)),
+        },
+        {
+          $set: {type: req.body.type},
+        },
+      );
     }
+
+    return res.status(200).send({ message: 'Restaurant Updated' });
   } catch (err) {
     return res.status(404).send(err);
   }
@@ -166,20 +147,16 @@ const updateRestaurant = async (req, res) => {
 
 const deleteRestaurant = async (req, res) => {
   try {
-    const findEntry = await restaurants.findOne({
-      where: {
-        r_id: req.params.rid,
-      },
+    const findEntry = await Restaurant.findOne({
+        _id: req.params.rid,
     });
     if (!findEntry) {
-      res.status(404).send("Restaurant Does not Exist to delete");
+      res.status(404).send('Restaurant Does not Exist to delete');
     } else {
-      await restaurants.destroy({
-        where: {
-          r_id: req.params.rid,
-        },
+      await Restaurant.findOneAndDelete({
+          _id: req.params.rid,
       });
-      res.status(201).send({});
+      res.status(201).send({message: 'Restaurant Deleted'});
     }
   } catch (err) {
     res.status(404).send(err);
@@ -193,11 +170,11 @@ const addRestaurantImage = async (req, res) => {
     const addImage = await restaurant_imgs.create({
       ri_img: imgLink,
       r_id: restId,
-      ri_alt_text: "Restaurant Image",
+      ri_alt_text: 'Restaurant Image',
     });
     return res.status(200).send(addImage);
   } else {
-    return res.status(500).send({ error: "Could not add Image" });
+    return res.status(500).send({ error: 'Could not add Image' });
   }
 };
 
@@ -213,38 +190,22 @@ const deleteRestaurantImage = async (req, res) => {
   });
 
   if (!img) {
-    return res.status(404).send({ error: "Image not found" });
+    return res.status(404).send({ error: 'Image not found' });
   }
 
   try {
     await img.destroy();
-    return res.status(200).send({ message: "Restaurant Image deleted" });
+    return res.status(200).send({ message: 'Restaurant Image deleted' });
   } catch (err) {
     return res.status(500).send(err);
   }
 };
 
 const getRestaurantDetails = async (req, res) => {
-  const restId = req.params.rid;
-  if (!restId) return res.status(404).send("Provide Restaurant ID");
+  if (!req.params.rid) return res.status(404).send('Provide Restaurant ID');
 
-  const filteredRestaurants = await restaurants.findOne({
-    include: [
-      {
-        model: restaurant_dishtypes,
-      },
-      {
-        model: restaurant_imgs,
-      },
-      {
-        model: dishes,
-        include: dish_imgs,
-      },
-    ],
-    where: {
-      r_id: restId,
-    },
-    attributes: { exclude: ["r_password", "createdAt", "updatedAt"] },
+  const filteredRestaurants = await Restaurant.findOne({
+    _id: req.params.rid,
   });
   return res.status(201).send(filteredRestaurants);
 };
@@ -253,11 +214,11 @@ const getRestaurantBySearch = async (req, res) => {
   const { keyWord } = req.query;
   const custId = req.headers.id;
   if(!custId){
-    return res.status(403).send({error: "login Again!!"});
+    return res.status(403).send({error: 'login Again!!'});
   } 
 
   const [data, meta] = await sequelize.query(
-    `select restaurants.*, restaurant_imgs.* from restaurants join restaurant_imgs on restaurants.r_id = restaurant_imgs.r_id join dishes on restaurants.r_id=dishes.r_id WHERE restaurants.r_name like "%${keyWord}%" or restaurants.r_desc like "%${keyWord}%" or dishes.d_name like "%${keyWord}%" `
+    `select restaurants.*, restaurant_imgs.* from restaurants join restaurant_imgs on restaurants.r_id = restaurant_imgs.r_id join dishes on restaurants.r_id=dishes.r_id WHERE restaurants.r_name like '%${keyWord}%' or restaurants.r_desc like '%${keyWord}%' or dishes.d_name like '%${keyWord}%' `
 
     );
   return res.status(200).send(data);
@@ -271,11 +232,11 @@ const getAllRestaurants = async (req, res) => {
     const { dishType } = req.query;
     let { deliveryType } = req.query;
 
-    if (deliveryType === "Pickup") {
-      deliveryType = ["Both", "Pickup"];
+    if (deliveryType === 'Pickup') {
+      deliveryType = ['Both', 'Pickup'];
     }
-    if (deliveryType === "Delivery") {
-      deliveryType = ["Both", "Delivery"];
+    if (deliveryType === 'Delivery') {
+      deliveryType = ['Both', 'Delivery'];
     }
 
     const searchObject = {
@@ -285,7 +246,7 @@ const getAllRestaurants = async (req, res) => {
 
     const checkProperties = (obj) => {
       Object.keys(obj).forEach((key) => {
-        if (obj[key] === null || obj[key] === "" || obj[key] === undefined) {
+        if (obj[key] === null || obj[key] === '' || obj[key] === undefined) {
           // eslint-disable-next-line no-param-reassign
           delete obj[key];
         }
@@ -300,10 +261,10 @@ const getAllRestaurants = async (req, res) => {
       include: [
         {
           model: restaurant_imgs,
-          attributes: { exclude: ["createdAt", "updatedAt"] },
+          attributes: { exclude: ['createdAt', 'updatedAt'] },
         },
       ],
-      attributes: { exclude: ["r_password", "createdAt", "updatedAt"] },
+      attributes: { exclude: ['r_password', 'createdAt', 'updatedAt'] },
       where: searchObject,
     });
 
@@ -315,23 +276,23 @@ const getAllRestaurants = async (req, res) => {
           include: [
             {
               model: restaurants,
-              attributes: { exclude: ["r_password", "createdAt", "updatedAt"] },
+              attributes: { exclude: ['r_password', 'createdAt', 'updatedAt'] },
               include: [
                 {
                   model: restaurant_imgs,
-                  attributes: { exclude: ["createdAt", "updatedAt"] },
+                  attributes: { exclude: ['createdAt', 'updatedAt'] },
                 },
               ],
             },
           ],
-          attributes: { exclude: ["createdAt", "updatedAt"] },
+          attributes: { exclude: ['createdAt', 'updatedAt'] },
           where: { rdt_type: dishType },
         }
       );
 
       if (filteredRestaurants) {
         if (restaurantsFilteredBydishTypes.length === 0) {
-          console.log("bruh1");
+          console.log('bruh1');
           return res.status(200).json([]);
         }
 
@@ -345,8 +306,8 @@ const getAllRestaurants = async (req, res) => {
             filteredRests.push(dishTypeObj.restaurant);
           }
         });
-        filteredRestaurants = _.uniq(filteredRests, "r_id");
-        console.log("bruh2");
+        filteredRestaurants = _.uniq(filteredRests, 'r_id');
+        console.log('bruh2');
         return res.status(200).json({ filteredRestaurants });
       }
 
@@ -356,15 +317,15 @@ const getAllRestaurants = async (req, res) => {
       });
 
       filteredRestaurants = filteredRests;
-      console.log("bruh3");
+      console.log('bruh3');
       return res.status(200).json({ filteredRestaurants });
     }
 
     if (!filteredRestaurants) {
-      console.log("bruh4");
-      return res.status(200).json({ message: "No restaurants found!" });
+      console.log('bruh4');
+      return res.status(200).json({ message: 'No restaurants found!' });
     }
-    console.log("bruh5");
+    console.log('bruh5');
     return res.status(200).json({ filteredRestaurants });
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -377,7 +338,7 @@ const getAllRestaurants = async (req, res) => {
 //   const type = req.query.type;
 //   const delivery = req.query.delivery;
 
-//   if (!custId) return res.status(404).send({ error: "Please Login!" });
+//   if (!custId) return res.status(404).send({ error: 'Please Login!' });
 
 //   const searchObject = {
 //     r_city: city,
@@ -386,7 +347,7 @@ const getAllRestaurants = async (req, res) => {
 
 //   const checkProperties = (obj) => {
 //     Object.keys(obj).forEach((key) => {
-//       if (obj[key] === null || obj[key] === "" || obj[key] === undefined) {
+//       if (obj[key] === null || obj[key] === '' || obj[key] === undefined) {
 //         // eslint-disable-next-line no-param-reassign
 //         delete obj[key];
 //       }
@@ -409,11 +370,11 @@ const getAllRestaurants = async (req, res) => {
 //       },
 //     ],
 //     where: searchObject,
-//     attributes: { exclude: ["r_password", "createdAt", "updatedAt"] },
+//     attributes: { exclude: ['r_password', 'createdAt', 'updatedAt'] },
 //   });
 //   return res.status(201).send(restDetails);
-//   // if(city!== undefined && city!==null && city !== ""){
-//   //   console.log("SAKdsankdj")
+//   // if(city!== undefined && city!==null && city !== ''){
+//   //   console.log('SAKdsankdj')
 //   //   const restDetails = await restaurants.findAll({
 //   //     include: [
 //   //       {
@@ -429,11 +390,11 @@ const getAllRestaurants = async (req, res) => {
 //   //     where:{
 //   //       r_city: city,
 //   //     },
-//   //     attributes: { exclude: ["r_password", "createdAt", "updatedAt"] },
+//   //     attributes: { exclude: ['r_password', 'createdAt', 'updatedAt'] },
 //   //   });
 //   //   return res.status(201).send(restDetails);
 //   // }else{
-//   //   console.log("INSIDE MAIN LOOP")
+//   //   console.log('INSIDE MAIN LOOP')
 //   //   const restDetails = await restaurants.findAll({
 //   //     include: [
 //   //       {
@@ -446,7 +407,7 @@ const getAllRestaurants = async (req, res) => {
 //   //         include: dish_imgs,
 //   //       }
 //   //     ],
-//   //     attributes: { exclude: ["r_password", "createdAt", "updatedAt"] },
+//   //     attributes: { exclude: ['r_password', 'createdAt', 'updatedAt'] },
 //   //   });
 //   //   return res.status(201).send(restDetails);
 //   // }
@@ -463,7 +424,7 @@ const getAllRestaurants = async (req, res) => {
 //   const location = req.body.location;
 
 //   if(!custId){
-//     return res.status(403).send({error: "login Again!!"});
+//     return res.status(403).send({error: 'login Again!!'});
 //   }
 
 //   const rests = await restaurants.findAll({
