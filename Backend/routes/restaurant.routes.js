@@ -80,8 +80,30 @@ router.get('/rest/:rid', getRestaurantDetails);
 router.get('/all/search?', getRestaurantBySearch);
 router.get('/all?', getAllRestaurants);
 
+/**
+ * @typedef RestaurantImage
+ * @property {[string]} imageLink
+*/
+
+/**
+ * @route POST /restaurants/restImages/
+ * @group Restaurant
+ * @param {RestaurantImage.model} RestaurantImage.body.required 
+ * @returns {object} 201 - Updated successfully
+ * @returns {Error}  500 - Internal Server Error 
+ * @security JWT
+ */
 router.post('/restImages/', addRestaurantImage)
 
+// https://ubereats-media.s3.amazonaws.com/Lento-Restaurant-Rochester-NY-01.jpg
+/**
+ * @route DELETE /restaurants/restImages/{imgId}
+ * @group Restaurant
+ * @param {string} imgId.path.required
+ * @returns {object} 200 - Deleted successfully
+ * @returns {Error}  500 - Internal Server Error 
+ * @security JWT
+ */
 router.delete('/restImages/:imgId', deleteRestaurantImage);
 
 module.exports = router;

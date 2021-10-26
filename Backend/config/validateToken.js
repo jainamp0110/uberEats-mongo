@@ -2,7 +2,7 @@
 const jwt = require('jsonwebtoken');
 const { restaurants, customers } = require('../models/data.model');
 
-const Restaurant = require('../models/restaurant.model');
+const Restaurant = require('../models/restaurant.models');
 function validateToken(req, res, next) {
   const token = req.headers.authorization;
   if (token) {

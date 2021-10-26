@@ -66,10 +66,12 @@ const RestaurantSchema = mongoose.Schema({
             type: {
                 type: String,
                 enum: ['Appetizer', 'Salad', 'Main Course', 'Dessert', 'Beverage'],
+                required: true,
             },
             category: {
                 type: String,
                 enum: ['Veg', 'Non-veg', 'Vegan'],
+                required: true,
             },
             imageLink: [{
                 imageLink: { type : String },

@@ -1,4 +1,4 @@
-const Restaurant = require('../models/restaurant.model');
+const Restaurant = require('../models/restaurant.models');
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -164,40 +164,38 @@ const deleteRestaurant = async (req, res) => {
 };
 
 const addRestaurantImage = async (req, res) => {
-  const restId = req.headers.id;
-  const imgLink = req.body.link;
-  if (imgLink) {
-    const addImage = await restaurant_imgs.create({
-      ri_img: imgLink,
-      r_id: restId,
-      ri_alt_text: 'Restaurant Image',
-    });
-    return res.status(200).send(addImage);
+  if (req.body.imageLink) {
+    await Restaurant.findOneAndUpdate(
+      {
+        _id: mongoose.Types.ObjectId(req.headers.id),
+      },
+      {
+        $push: {imageLink: req.body},
+      },
+    );
+    return res.status(201).send({message: 'Images added successfully'});
   } else {
-    return res.status(500).send({ error: 'Could not add Image' });
+    return res.status(500).send({ message: 'Could not add Image' });
   }
 };
 
 const deleteRestaurantImage = async (req, res) => {
-  const restId = req.headers.id;
-  const id = req.params.imgId;
-
-  const img = await restaurant_imgs.findOne({
-    where: {
-      ri_id: id,
-      r_id: restId,
-    },
-  });
-
-  if (!img) {
-    return res.status(404).send({ error: 'Image not found' });
+  if(!req.params.imgId){
+    return res.status(404).send({message: 'Image does not exist'});
   }
 
-  try {
-    await img.destroy();
-    return res.status(200).send({ message: 'Restaurant Image deleted' });
-  } catch (err) {
-    return res.status(500).send(err);
+  try{
+    await Restaurant.findOneAndUpdate(
+      {
+        _id: mongoose.Types.ObjectId(req.headers.id),
+      },
+      {
+        $pull: {imageLink: {_id: mongoose.Types.ObjectId(req.params.imgId)}},
+      },
+    );
+    return res.status(200).send({message: 'Image removed successfully'});
+  }catch(error){
+    return res.status(500).send({message: 'Internal Server Error'});
   }
 };
 
