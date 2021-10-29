@@ -7,10 +7,12 @@ const {
   getCustomerById,
   getAllCustomers,
   addAddress,
-  getAddress,
+  getAllAddress,
   getAllFavorites,
   addToFavorites,
   deleteFromFavorites,
+  updateAddress,
+  deleteAddress,
 } = require('../controllers/customer');
 const { customerValidationRules, validator } = require('../controllers/validator');
 
@@ -75,10 +77,63 @@ router.get('/profile/:cid', getCustomerById);
  */
 router.get('/fvrts', getAllFavorites);
 
+/**
+ * @route GET /customers/address
+ * @group Address
+ * @returns {object} 201 - Fetched successfully
+ * @returns {Error}  404 - Not found 
+ * @security JWT
+ */
+router.get('/address', getAllAddress);
 
-router.get('/address', getAddress);
+/**
+ * @typedef Address
+ * @property {string} addressLine 
+ * @property {string} zipcode
+ * @property {string} city 
+ * @property {string} state 
+ * @property {string} country 
+*/
 
+/**
+ * @route POST /customers/address/
+ * @group Address
+ * @param {Address.model} Address.body.required 
+ * @returns {object} 200 - Updated successfully
+ * @returns {Error}  404 - Not found 
+ * @security JWT
+ */
 router.post('/address', addAddress);
+
+/**
+ * @typedef Address
+ * @property {string} addressLine 
+ * @property {string} zipcode
+ * @property {string} city 
+ * @property {string} state 
+ * @property {string} country 
+*/
+
+/**
+ * @route PUT /customers/address/{aid}
+ * @group Address
+ * @param {string} aid.path.required
+ * @param {Address.model} Address.body.required 
+ * @returns {object} 200 - Updated successfully
+ * @returns {Error}  404 - Not found 
+ * @security JWT
+ */
+router.put('/address/:aid',updateAddress);
+
+/**
+ * @route DELETE /customers/address/{aid}
+ * @group Address
+ * @param {string} aid.path.required
+ * @returns {object} 200 - Deleted successfully
+ * @returns {Error}  404 - Not found 
+ * @security JWT
+ */
+router.delete('/address/:aid',deleteAddress);
 
 /**
  * @typedef CreateFavorite

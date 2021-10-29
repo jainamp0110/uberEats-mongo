@@ -120,30 +120,22 @@ const updateCustomer = async (req, res) => {
 
 const addAddress = async (req, res) => {
   try {
-    const custId = req.headers.id;
-    const { role } = req.headers;
-    const { address, zipcode } = req.body;
 
-    if (!custId || role === 'restaurant') {
+    if (!req.headers.id || req.headers.role === 'restaurant') {
       return res.status(401).send({ error: 'Unauthorised Access' });
     }
-    if (role === 'customer') {
-      const findExistAddress = await customer_address.findOne({
-        where: {
-          c_id: custId,
-          ca_address_line: address,
-          ca_zipcode: zipcode,
+    if (!(req.body.addressLine && req.body.zipcode && req.body.city && req.body.state && req.body.country)){
+      return res.status(403).send("Provide all Details");
+    }
+    if (req.headers.role === 'customer') {
+      await Customer.findByIdAndUpdate(
+        {
+          _id: mongoose.Types.ObjectId(String(req.headers.id)),
         },
-      });
-
-      if (findExistAddress) {
-        return res.status(409).send({ error: 'Address Already Exists' });
-      }
-      await customer_address.create({
-        ca_address_line: address,
-        ca_zipcode: zipcode,
-        c_id: custId,
-      });
+        {
+          $push: {addresses: req.body},
+        }
+      );
     }
     res.status(201).send({ msg: 'Address Added' });
   } catch (err) {
@@ -151,25 +143,82 @@ const addAddress = async (req, res) => {
   }
 };
 
-const getAddress = async (req, res) => {
+// all addresses
+const getAllAddress = async (req, res) => {
   const custId = req.headers.id;
 
   try {
-    const custAddr = await customer_address.findAll({
-      where: {
-        c_id: custId,
-      },
+    const custAddr = await Customer.findOne({
+        _id: mongoose.Types.ObjectId(req.headers.id),
     });
 
-    if (custAddr.length === 0 || !custAddr) {
+    if (custAddr.addresses.length === 0 || !custAddr) {
       return res.staus(404).send({ error: 'No Addresses Found' });
     }
-    return res.status(201).send(custAddr);
+    return res.status(201).send(custAddr.addresses);
   } catch (err) {
     res.status(500).send(err);
   }
 };
 
+const updateAddress = async (req, res) => {
+  const addr = await Customer.findOne(
+  {  _id: mongoose.Types.ObjectId(String(req.headers.id)),
+    'addresses._id': mongoose.Types.ObjectId(String(req.params.aid)),
+  });
+
+  if(!addr){
+    return res.status(404).send('Address Does not exist!!');
+  }
+  try{
+    const updObj = {};
+    Object.keys(req.body).forEach((ele) => {
+      updObj[`addresses.$.${ele}`] = req.body[ele];
+    });
+
+    await Customer.updateOne(
+      {
+        _id: mongoose.Types.ObjectId(req.headers.id),
+        'addresses._id': mongoose.Types.ObjectId(req.params.aid),
+      },
+      {
+        $set: updObj,
+      }
+    );
+    res.status(201).send('Address Updated');
+
+  }catch(err){
+    res.status(500).send(err);
+  }
+};
+
+const deleteAddress = async (req,res) => {
+  if(!req.params.aid){
+   return res.status(404).send('Need Address ID');
+  }
+
+  const cust = await Customer.findOne({
+    _id: mongoose.Types.ObjectId(String(req.headers.id)),
+    'addresses._id': mongoose.Types.ObjectId(String(req.params.aid)),
+  });
+
+  if (!cust) return res.status(403).send('Address does not exist');
+
+  try {
+      await Customer.findOneAndUpdate({
+        _id: mongoose.Types.ObjectId(String(req.headers.id)),
+        },
+        {
+          $pull: {addresses: {_id: mongoose.Types.ObjectId(req.params.aid)}},
+        }
+      );
+
+    return res.status(201).send('Address deleted');
+  } catch (err) {
+    return res.status(404).send(err);
+  }
+
+};
 const deleteCustomer = async (req, res) => {
   if (!req.params.cid) return res.status(404).send('Need Customer ID');
 
@@ -319,8 +368,10 @@ module.exports = {
   getCustomerById,
   getAllCustomers,
   addAddress,
-  getAddress,
+  getAllAddress,
   addToFavorites,
   deleteFromFavorites,
   getAllFavorites,
+  updateAddress,
+  deleteAddress,
 };
