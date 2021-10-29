@@ -82,7 +82,7 @@ router.get('/all?', getAllRestaurants);
 
 /**
  * @typedef RestaurantImage
- * @property {[string]} imageLink
+ * @property {string} imageLink
 */
 
 /**

@@ -10,8 +10,8 @@ const customerValidationRules = () => [
   body('city').optional({ nullable: true }).isString().withMessage('Enter Valid City Name'),
   body('state').optional({ nullable: true }).isString().withMessage('Enter Valid State'),
   body('country').optional({ nullable: true }).isString().withMessage('Enter Valid Country'),
-  check('nname').optional({ nullable: true }).isString(),
-  body('contact')
+  check('nickName').optional({ nullable: true }).isString(),
+  body('contactNum')
     .optional({ nullable: true })
     .isString()
     .custom((val) => {

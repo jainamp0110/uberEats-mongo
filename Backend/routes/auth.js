@@ -10,10 +10,37 @@ const { createCustomer, customerLogin } = require('../controllers/customer');
 const { restaurantLogin, createRestaurant } = require('../controllers/restaurant');
 const { validator, restaurantValidationRules, customerValidationRules } = require('../controllers/validator');
 
-/// Customer Registration API
+/**
+ * @typedef RegisterCustomer
+ * @property {string} email.required 
+ * @property {string} password.required
+ * @property {string} name.required
+ */
+
+/**
+ * @route POST /auth/register
+ * @group Register
+ * @param {RegisterCustomer.model} RegisterCustomer.body.required 
+ * @returns {object} 201 - An array of Customer info
+ * @returns {Error}  400 - Bad request 
+ * @returns {Error} 409 - Customer already exist
+ */
 router.post('/register', customerValidationRules(), validator, createCustomer);
 
-/// Customer Login API
+/**
+ * @typedef LoginCustomer
+ * @property {string} email.required 
+ * @property {string} password.required
+ */
+
+/**
+ * @route POST /auth/login
+ * @group Login
+ * @param {LoginCustomer.model} LoginCustomer.body.required 
+ * @returns {object} 201 - Login success with token
+ * @returns {Error}  400 - Bad request 
+ * @returns {Error} 409 - Email or Password Incorrect
+ */
 router.post('/login', customerValidationRules(), validator, customerLogin);
 
 /**

@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const { restaurants, customers } = require('../models/data.model');
 
 const Restaurant = require('../models/restaurant.models');
+const Customer = require('../models/customer.models');
+
 function validateToken(req, res, next) {
   const token = req.headers.authorization;
   if (token) {
@@ -31,13 +33,13 @@ function validateToken(req, res, next) {
         req.headers.id = data.id;
         next();
       } else if (data.role === 'customer') {
-        if (!(data.email && data.c_id)) {
+        if (!(data.email && data.id)) {
           return res.status(400).send('Incomplete Information');
         }
 
-        const cust = await customers.findOne({
+        const cust = await Customer.findOne({
           where: {
-            c_email: data.email,
+            email: data.email,
           },
         });
 
@@ -47,7 +49,7 @@ function validateToken(req, res, next) {
             .send('Permissions Required For accessing Customers');
         }
         req.headers.role = 'customer';
-        req.headers.id = data.c_id;
+        req.headers.id = data.id;
 
         next();
       } else {

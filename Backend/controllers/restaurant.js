@@ -93,7 +93,7 @@ const updateRestaurant = async (req, res) => {
   try {
     console.log('entered');
     const rest = await Restaurant.findOne({
-        _id: req.params.rid,
+        _id: mongoose.Types.ObjectId(String(req.params.rid)),
     });
 
     if (!rest) return res.status(404).send('Restaurant Not Found');
@@ -148,13 +148,13 @@ const updateRestaurant = async (req, res) => {
 const deleteRestaurant = async (req, res) => {
   try {
     const findEntry = await Restaurant.findOne({
-        _id: req.params.rid,
+        _id: mongoose.Types.ObjectId(String(req.params.rid)),
     });
     if (!findEntry) {
       res.status(404).send('Restaurant Does not Exist to delete');
     } else {
       await Restaurant.findOneAndDelete({
-          _id: req.params.rid,
+          _id: mongoose.Types.ObjectId(String(req.params.rid)),
       });
       res.status(201).send({message: 'Restaurant Deleted'});
     }
