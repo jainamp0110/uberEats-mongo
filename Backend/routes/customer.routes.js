@@ -66,10 +66,42 @@ router.get('/', getAllCustomers);
 router.get('/myprofile', getCustomerProfile);
 router.get('/profile/:cid', getCustomerById);
 
+/**
+ * @route GET /customers/fvrts
+ * @group Favorites
+ * @returns {object} 201 - Fetched successfully
+ * @returns {Error}  404 - Not found 
+ * @security JWT
+ */
 router.get('/fvrts', getAllFavorites);
+
+
 router.get('/address', getAddress);
+
 router.post('/address', addAddress);
+
+/**
+ * @typedef CreateFavorite
+ * @property {string} rid 
+*/
+/**
+ * @route POST /customers/fvrts
+ * @group Favorites
+ * @param {CreateFavorite.model} CreateFavorite.body.required 
+ * @returns {object} 200 - Updated successfully
+ * @returns {Error}  404 - Not found 
+ * @security JWT
+ */
 router.post('/fvrts', addToFavorites);
+
+/**
+ * @route DELETE /customers/fvrts/{rid}
+ * @group Favorites
+ * @param {string} rid.path.required
+ * @returns {object} 201 - Deleted successfully
+ * @returns {Error}  404 - Not found 
+ * @security JWT
+ */
 router.delete('/fvrts/:rid', deleteFromFavorites);
 
 

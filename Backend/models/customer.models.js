@@ -27,11 +27,11 @@ const CustomerSchema = mongoose.Schema({
     state: {
         type: String,
     },
+    country: {
+        type: String,
+    },
     dob: {
         type: Date,
-    },
-    zipcode: {
-        type: String,
     },
     nickName: {
         type: String,
@@ -39,7 +39,29 @@ const CustomerSchema = mongoose.Schema({
     imageLink: {
         type: String,
     },
-    favorites: [],
+    favorites: [mongoose.Types.ObjectId],
+    addresses: [new mongoose.Schema({
+        addressLine: {
+            type: String,
+            required: true,
+        },
+        zipcode: {
+            type: String,
+            required: true,
+        },
+        city: {
+            type: String,
+            required: true,
+        },
+        state: {
+            type: String,
+            required: true,
+        },
+        country: {
+            type: String,
+            required: true,
+        },
+    })],
 });
 
 module.exports = mongoose.model('Customer', CustomerSchema);

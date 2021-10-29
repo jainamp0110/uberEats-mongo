@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const Customer = require('../models/customer.models');
+const Restaurant = require('../models/restaurant.models');
 const {
   customers,
   orders,
@@ -237,37 +238,27 @@ const getAllCustomers = async (req, res) => {
 const addToFavorites = async (req, res) => {
   const custId = req.headers.id;
   const restId = req.body.rid;
-  if (!custId) {
+  if (!req.headers.id) {
     return res.status(404).send({ error: 'Customer Id Not FOund' });
   }
 
   try {
-    const findRest = await restaurants.findOne({
-      where: {
-        r_id: restId,
-      },
+    const findRest = await Restaurant.findOne({
+        _id: mongoose.Types.ObjectId(String(req.body.rid)),
     });
 
     if (!findRest) {
       return res.status(404).send({ error: 'Restaurant do not exist' });
     }
 
-    const existingFvrt = await fvrts.findOne({
-      where: {
-        c_id: custId,
-        r_id: restId,
+    await Customer.findOneAndUpdate(
+      {
+        _id: mongoose.Types.ObjectId(String(req.headers.id)),
       },
-    });
-
-    if (existingFvrt) {
-      return res
-        .status(201)
-        .send({ message: 'Restaurant is already added to fvrts' });
-    }
-    const addFavorite = await fvrts.create({
-      r_id: restId,
-      c_id: custId,
-    });
+      {
+        $push: {favorites: req.body.rid}
+      }
+    );
   } catch (err) {
     return res.status(500).send(err);
   }
@@ -278,15 +269,18 @@ const addToFavorites = async (req, res) => {
 const deleteFromFavorites = async (req, res) => {
   const custId = req.headers.id;
   const restId = req.params.rid;
-  if (!custId) {
+  if (!req.headers.id) {
     return res.status(404).send({ error: 'Customer Id Not FOund' });
   }
 
   try {
-    await fvrts.destroy({
-      r_id: restId,
-      c_id: custId,
-    });
+    await Customer.findOneAndUpdate(
+      {
+        _id: mongoose.Types.ObjectId(String(req.headers.id)),
+      },{
+        $pull: {favorites: req.params.rid},
+      }
+    );
   } catch (err) {
     return res.status(500).send(err);
   }
@@ -295,20 +289,22 @@ const deleteFromFavorites = async (req, res) => {
 };
 
 const getAllFavorites = async (req, res) => {
-  const custId = req.headers.id;
-  if (!custId) {
+  if (!req.headers.id) {
     return res.status(404).send({ error: 'Customer Id Not Found' });
   }
 
   try {
-    const custFvrts = await fvrts.findAll({
-      include: [{model: restaurants, include: [restaurant_imgs, restaurant_dishtypes]}],
-      where:{
-        c_id: custId,
-      },
+    const cust = await Customer.findOne({
+      _id: mongoose.Types.ObjectId(String(req.headers.id)),
     });
 
-    return res.status(200).send(custFvrts);
+    console.log(cust);
+    
+    const resArray = await Restaurant.find({
+      '_id': {$in : cust.favorites},
+    })
+
+    return res.status(200).send(resArray);
   } catch (err) {
     return res.status(500).send(err);
   }

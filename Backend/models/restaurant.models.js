@@ -47,7 +47,7 @@ const RestaurantSchema = mongoose.Schema({
         imageLink: { type: String },
     }],
     type: [String],
-    dishes: [
+    dishes: [new mongoose.Schema(
         {
             name: {
                 type: String,
@@ -77,7 +77,7 @@ const RestaurantSchema = mongoose.Schema({
                 imageLink: { type : String },
             }],
         },
-    ],
+        )],
 });
 
 module.exports = mongoose.model('Restaurant', RestaurantSchema);
