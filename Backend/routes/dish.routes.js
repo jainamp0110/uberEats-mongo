@@ -68,10 +68,10 @@ router.delete('/:did', deleteDish);
 router.get('/:did', getDishById);
 
 
-// router.post('/images/:did', insertDishImage);
+router.post('/images/:did', insertDishImage);
 
 
-// router.delete('/images/:imgId', deleteDishImage);
+router.delete('/images/:imgId', deleteDishImage);
 
 /**
  * @route GET /dishes/

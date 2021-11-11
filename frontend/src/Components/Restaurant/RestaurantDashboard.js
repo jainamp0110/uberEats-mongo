@@ -53,13 +53,13 @@ function RestaurantDashboard() {
     }
 
     axiosInstance
-      .get(`restaurant/rest/${tokenData.id}`, {
+      .get(`restaurants/rest/${tokenData.id}`, {
         headers: {
           Authorization: token,
         },
       })
       .then((res) => {
-        console.log(res.data);
+        console.log(res);
         setimages(res.data.imageLink);
         const newDataObject = {};
         newDataObject['name'] = res.data.name;
@@ -67,14 +67,14 @@ function RestaurantDashboard() {
 
         const tempArr = [];
 
-        res.data.restaurant_dishtypes?.forEach((ele) => {
-          tempArr.push({ type: ele.type });
+        res.data.type?.forEach((ele) => {
+          tempArr.push({ type: ele });
         });
 
         console.log(tempArr);
 
         newDataObject['type'] = tempArr;
-        newDataObject['addressLine'] = res.data.addressLine;
+        newDataObject['address'] = res.data.address;
         newDataObject['city'] = [{ city: res.data.city }];
         newDataObject['state'] = [{ state: res.data.state }];
         newDataObject['zipcode'] = res.data.zipcode;
@@ -83,28 +83,9 @@ function RestaurantDashboard() {
           { deliveryType: res.data.deliveryType },
         ];
 
-        const sTime = res.data.startTime ? res.data.startTime.split(':') : null;
-        const s = new Date(
-          2021,
-          10,
-          30,
-          sTime?.length > 0 ? sTime[0] : null,
-          sTime?.length > 0 ? sTime[1] : null,
-          sTime?.length > 0 ? sTime[2] : null,
-          0,
-        );
-        newDataObject['startTime'] = s;
-        const eTime = res.data.endTime ? res.data.endTime.split(':') : null;
-        const e = new Date(
-          2021,
-          10,
-          30,
-          eTime?.length > 0 ? eTime[0] : null,
-          eTime?.length > 0 ? eTime[1] : null,
-          eTime?.length > 0 ? eTime[2] : null,
-          0,
-        );
-        newDataObject['endTime'] = e;
+        newDataObject['startTime'] = new Date(res.data.startTime);
+        newDataObject['endTime'] = new Date(res.data.endTime);
+
         setformDetails(newDataObject);
       });
   };
@@ -122,18 +103,16 @@ function RestaurantDashboard() {
       dishTypes.push(ele.type);
     });
 
-    formDetails.types = dishTypes;
+    formDetails.type = dishTypes;
     formDetails.city = formDetails.city[0].city;
     formDetails.deliveryType = formDetails.deliveryType[0].deliveryType;
     formDetails.state = formDetails.state[0].state;
 
-    var startTime = formDetails.start.toLocaleTimeString();
-    startTime = startTime.slice(0, -3);
-    var endTime = formDetails.end.toLocaleTimeString();
-    endTime = endTime.slice(0, -3);
+    const startTime = formDetails.startTime;
+    const endTime = formDetails.endTime;
 
-    formDetails.start = startTime;
-    formDetails.end = endTime;
+    formDetails.startTime = startTime;
+    formDetails.endTime = endTime;
 
     const token = localStorage.getItem('token');
     if (!token || token.length === 0) {
@@ -146,7 +125,7 @@ function RestaurantDashboard() {
 
     try {
       console.log('Form Details', formDetails);
-      await axiosInstance.put(`restaurant/${tokenData.id}`, formDetails, {
+      await axiosInstance.put(`restaurants/${tokenData.id}`, formDetails, {
         headers: {
           Authorization: token,
         },
@@ -155,6 +134,8 @@ function RestaurantDashboard() {
       toast.success('Updated details successfully!');
       getRestData();
     } catch (err) {
+      setUpdating(false);
+      console.log(err)
       toast.error(err.response.data.error);
     }
   };
@@ -181,9 +162,9 @@ function RestaurantDashboard() {
       try {
         const token = localStorage.getItem('token');
         await axiosInstance.post(
-          'restaurant/restImages',
+          'restaurants/restImages',
           {
-            link: data.location,
+            imageLink: data.location,
           },
           {
             headers: {
@@ -195,6 +176,7 @@ function RestaurantDashboard() {
         setModalIsOpen(false);
         getRestData();
       } catch (err) {
+        console.log(err)
         toast.error(err.response.data.error);
       }
     });
@@ -212,7 +194,7 @@ function RestaurantDashboard() {
             <Carousel showArrows={true} showThumbs={false}>
               {images.map((ele) => (
                 <div style={{ height: '500px' }}>
-                  <img src={ele.ri_img} />
+                  <img src={ele.imageLink} />
                 </div>
               ))}
             </Carousel>
@@ -300,14 +282,14 @@ function RestaurantDashboard() {
 
                 <FormControl label="Address Line">
                   <Input
-                    id="addressLine"
+                    id="address"
                     autoComplete="off"
                     placeholder="Enter Address Line"
-                    value={formDetails.addressLine}
+                    value={formDetails.address}
                     onChange={(e) =>
                       setformDetails({
                         ...formDetails,
-                        addressLine: e.target.value,
+                        address: e.target.value,
                       })
                     }
                   />
@@ -370,14 +352,14 @@ function RestaurantDashboard() {
 
                 <FormControl label="Contact Number">
                   <Input
-                    id="contact"
+                    id="contactNum"
                     autoComplete="off"
                     placeholder="Enter Contact Number"
-                    value={formDetails.contact}
+                    value={formDetails.contactNum}
                     onChange={(e) =>
                       setformDetails({
                         ...formDetails,
-                        contact: e.target.value,
+                        contactNum: e.target.value,
                       })
                     }
                   />
@@ -405,12 +387,12 @@ function RestaurantDashboard() {
 
                 <FormControl label=" Restaurant Start Time">
                   <TimePicker
-                    value={formDetails.start}
+                    value={formDetails.startTime}
                     placeholder="Enter Restaurant Opening Time"
                     onChange={(value) =>
                       setformDetails({
                         ...formDetails,
-                        start: value,
+                        startTime: value,
                       })
                     }
                     step={1800}
@@ -420,12 +402,12 @@ function RestaurantDashboard() {
 
                 <FormControl label=" Restaurant End Time">
                   <TimePicker
-                    value={formDetails.end}
+                    value={formDetails.endTime}
                     placeholder="Enter Restaurant Closing Time"
                     onChange={(value) =>
                       setformDetails({
                         ...formDetails,
-                        end: value,
+                        endTime: value,
                       })
                     }
                     step={1800}

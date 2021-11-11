@@ -114,23 +114,29 @@ const getAllDishes = async (req, res) => {
 const insertDishImage = async (req, res) => {
   const restId = req.headers.id;
   const dishId = req.params.did;
-  const imageLink = req.body.img;
+
+  if(!req.body.imageLink){
+    return res.status(400).send({error: 'Provide all details'});
+  }
 
   if (!dishId) return res.status(403).send("Provide all Details");
-  const existDish = await dishes.findOne({
-    where: {
-      d_id: dishId,
-      r_id: restId,
-    },
+  const existDish = await Restaurant.findOne({
+    _id: mongoose.Types.ObjectId(restId),
+    'dishes._id': mongoose.Types.ObjectId(dishId),
   });
 
   if (!existDish) return res.status(404).send("Dish Does not exist!!");
 
-  await dish_imgs.create({
-    di_img: imageLink,
-    di_alt_text: "Dish image",
-    d_id: dishId,
-  });
+  const nImg = await Restaurant.findOneAndUpdate({
+    _id: mongoose.Types.ObjectId(restId),
+    'dishes._id': mongoose.Types.ObjectId(dishId),
+  },
+  {
+    $push: {'dishes.$.imageLink':  req.body.imageLink},
+  },{
+    new: true,
+  }
+  );
 
   return res.status(201).send({ message: "Dish image Added" });
 };

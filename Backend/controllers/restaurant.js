@@ -88,14 +88,15 @@ const restaurantLogin = async (req, res) => {
 };
 
 const updateRestaurant = async (req, res) => {
-  console.log('entered nhereree');
+  // console.log('entered nhereree');
 
   try {
-    console.log('entered');
+    // console.log('entered',req.params.rid);
     const rest = await Restaurant.findOne({
         _id: mongoose.Types.ObjectId(String(req.params.rid)),
     });
 
+    // console.log(rest);
     if (!rest) return res.status(404).send('Restaurant Not Found');
 
     if (req.body.email && req.body.email !== rest.email) {
@@ -141,7 +142,8 @@ const updateRestaurant = async (req, res) => {
 
     return res.status(200).send({ message: 'Restaurant Updated' });
   } catch (err) {
-    return res.status(404).send(err);
+    console.log(err)
+    return res.status(500).send(err);
   }
 };
 

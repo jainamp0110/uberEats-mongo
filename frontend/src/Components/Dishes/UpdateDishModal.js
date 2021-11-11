@@ -73,7 +73,7 @@ function UpdateDishModal(props) {
           headers: {
             Authorization: token,
           },
-        },
+        }
       )
       .then((res) => {
         toast.success('Dish Updated Succesfully');
@@ -107,7 +107,9 @@ function UpdateDishModal(props) {
     dispatch(dishImageUploadRequest());
     uploadFile(acceptedFiles[0], config)
       .then((data) => {
-        dispatch(dishImageUploadSuccess(selectedDishId, data.location));
+        dispatch(
+          dishImageUploadSuccess(selectedDishId, data.location)
+        );
       })
       .then((res) => {
         setImageUploading(false);
@@ -117,28 +119,32 @@ function UpdateDishModal(props) {
       });
   };
 
+  console.log(dishImages);
+
   useEffect(() => {
     if (dishes && selectedDishId) {
-      let selectedDish = dishes.filter((dish) => dish.d_id === selectedDishId);
+      let selectedDish = dishes.filter((dish) => dish._id === selectedDishId);
       if (selectedDish.length > 0) {
         console.log(selectedDish);
-        setDishImages(selectedDish[0].dish_imgs);
-        setDishName(selectedDish[0].d_name ? selectedDish[0].d_name : '');
+        setDishImages(
+          selectedDish[0].imageLink.length > 0 ? selectedDish[0].imageLink : ''
+        );
+        setDishName(selectedDish[0].name ? selectedDish[0].name : '');
         setDishDescription(
-          selectedDish[0].d_desc ? selectedDish[0].d_desc : '',
+          selectedDish[0].description ? selectedDish[0].description : ''
         );
         setDishIngredients(
-          selectedDish[0].d_ingredients ? selectedDish[0].d_ingredients : '',
+          selectedDish[0].ingredients ? selectedDish[0].ingredients : ''
         );
         setDishType(
-          selectedDish[0].d_type ? [{ type: selectedDish[0].d_type }] : [],
+          selectedDish[0].type ? [{ type: selectedDish[0].type }] : []
         );
         setDishCategory(
-          selectedDish[0].d_category
-            ? [{ category: selectedDish[0].d_category }]
-            : [],
+          selectedDish[0].category
+            ? [{ category: selectedDish[0].category }]
+            : []
         );
-        setDishPrice(selectedDish[0].d_price ? selectedDish[0].d_price : null);
+        setDishPrice(selectedDish[0].price ? selectedDish[0].price : null);
       }
     }
   }, [selectedDishId, dishes]);
@@ -148,7 +154,7 @@ function UpdateDishModal(props) {
       <Modal
         isOpen={dishModalIsOpen}
         closeable
-        size="800px"
+        size='800px'
         onClose={() => setDishModalIsOpen(false)}
       >
         <ModalHeader> Update Dish</ModalHeader>
@@ -158,7 +164,10 @@ function UpdateDishModal(props) {
               {dishImages?.length > 0
                 ? dishImages.map((ele) => (
                     <div style={{ height: '200px' }}>
-                      <img src={ele.di_img} style={{ borderRadius: '20px' }} />
+                      <img
+                        src={ele.imageLink}
+                        style={{ borderRadius: '20px' }}
+                      />
                     </div>
                   ))
                 : null}
@@ -170,7 +179,7 @@ function UpdateDishModal(props) {
                   uploadDishImage(
                     acceptedFiles,
                     selectedDishId,
-                    setDishModalIsOpen,
+                    setDishModalIsOpen
                   );
                 }}
                 progressMessage={imageUploading ? 'Uploading....' : ''}
@@ -180,48 +189,48 @@ function UpdateDishModal(props) {
           <Col>
             <form onSubmit={updateDishFormHandler}>
               <div style={{ textAlign: 'left', width: '90%' }}>
-                <FormControl label="Dish Name">
+                <FormControl label='Dish Name'>
                   <Input
-                    id="name"
-                    autoComplete="off"
-                    placeholder="Enter Name"
+                    id='name'
+                    autoComplete='off'
+                    placeholder='Enter Name'
                     value={dishName}
                     onChange={(e) => setDishName(e.target.value)}
                   />
                 </FormControl>
-                <FormControl label="Description">
+                <FormControl label='Description'>
                   <Input
-                    id="desc"
-                    autoComplete="off"
-                    placeholder="Enter Description"
+                    id='desc'
+                    autoComplete='off'
+                    placeholder='Enter Description'
                     value={dishDescription}
                     onChange={(e) => setDishDescription(e.target.value)}
                   />
                 </FormControl>
-                <FormControl label="Ingredients">
+                <FormControl label='Ingredients'>
                   <Input
-                    id="desc"
-                    autoComplete="off"
-                    placeholder="Enter Ingredients"
+                    id='desc'
+                    autoComplete='off'
+                    placeholder='Enter Ingredients'
                     value={dishIngredients}
                     onChange={(e) => setDishIngredients(e.target.value)}
                   />
                 </FormControl>
-                <FormControl label="Dish Type">
+                <FormControl label='Dish Type'>
                   <Select
                     options={[
                       { type: 'Veg' },
                       { type: 'Non-Veg' },
                       { type: 'Vegan' },
                     ]}
-                    valueKey="type"
-                    labelKey="type"
-                    placeholder=""
+                    valueKey='type'
+                    labelKey='type'
+                    placeholder=''
                     value={dishType}
                     onChange={({ value }) => setDishType(value)}
                   />
                 </FormControl>
-                <FormControl label="Dish Category">
+                <FormControl label='Dish Category'>
                   <Select
                     options={[
                       { category: 'Appetizer' },
@@ -230,24 +239,24 @@ function UpdateDishModal(props) {
                       { category: 'Desserts' },
                       { category: 'Beverages' },
                     ]}
-                    valueKey="category"
-                    labelKey="category"
-                    placeholder=""
+                    valueKey='category'
+                    labelKey='category'
+                    placeholder=''
                     value={dishCategory}
                     onChange={({ value }) => setDishCategory(value)}
                   />
                 </FormControl>
-                <FormControl label="Price">
+                <FormControl label='Price'>
                   <Input
-                    id="price"
-                    autoComplete="off"
-                    placeholder="Enter price"
-                    type="number"
+                    id='price'
+                    autoComplete='off'
+                    placeholder='Enter price'
+                    type='number'
                     value={dishPrice}
                     onChange={(e) => setDishPrice(e.target.value)}
                   />
                 </FormControl>
-                <Button style={{ width: '100%' }} type="submit">
+                <Button style={{ width: '100%' }} type='submit'>
                   {isUpdating ? 'Updating Dish' : 'Update Dish'}
                 </Button>
               </div>

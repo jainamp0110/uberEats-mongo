@@ -65,12 +65,12 @@ function RestaurantDishes() {
     }
 
     const tokenData = jwt.decode(token);
-    if (tokenData.role === 'customer' || !tokenData.r_id) {
+    if (tokenData.role === 'customer' || !tokenData.id) {
       history.push('/');
     }
 
     axiosInstance
-      .get(`restaurant/rest/${tokenData.r_id}`, {
+      .get(`restaurants/rest/${tokenData.id}`, {
         headers: {
           Authorization: token,
         },
@@ -78,44 +78,45 @@ function RestaurantDishes() {
       .then((res) => {
         console.log(res.data);
         const restData = {};
-        restData['name'] = res.data.r_name ? res.data.r_name : '';
+        restData['name'] = res.data.name ? res.data.name : '';
 
         if (
           !(
-            res.data.r_address_line &&
-            res.data.r_city &&
-            res.data.r_state &&
-            res.data.r_zipcode
+            res.data.address &&
+            res.data.city &&
+            res.data.state &&
+            res.data.zipcode
           )
         ) {
-          res.data.r_address_line = '';
-          res.data.r_city = '';
-          res.data.r_state = '';
-          res.data.r_zipcode = '';
+          res.data.address = '';
+          res.data.city = '';
+          res.data.state = '';
+          res.data.zipcode = '';
         }
         let address =
-          res.data.r_address_line +
+          res.data.address +
           ', ' +
-          res.data.r_city +
+          res.data.city +
           ', ' +
-          res.data.r_state +
+          res.data.state +
           ' - ' +
-          res.data.r_zipcode;
+          res.data.zipcode;
         restData['address'] = address;
-        restData['desc'] = res.data.r_desc ? res.data.r_desc : '';
-        restData['contactNo'] = res.data.r_contact ? res.data.r_contact : '';
+        restData['description'] = res.data.description ? res.data.description : '';
+        restData['contactNum'] = res.data.contactNum ? res.data.contactNum : '';
 
-        res.data.r_delivery_type = res.data.r_delivery_type
-          ? res.data.r_delivery_type
+        res.data.deliveryType = res.data.deliveryType
+          ? res.data.deliveryType
           : '';
-        if (res.data.r_delivery_type === 'both') {
+
+        if (res.data.deliveryType === 'Both') {
           restData['deliveryType'] = 'Pickup and Delivery';
         } else {
-          restData['deliveryType'] = res.data.r_delivery_type;
+          restData['deliveryType'] = res.data.deliveryType;
         }
 
-        res.data.r_start = res.data.r_start ? res.data.r_start : '';
-        let splitStartTime = res.data.r_start.split(':');
+        res.data.startTime = res.data.startTime ? res.data.startTime : '';
+        let splitStartTime = res.data.startTime.split(':');
 
         let startTime;
         if (parseInt(splitStartTime[0]) >= 12) {
@@ -145,7 +146,7 @@ function RestaurantDishes() {
         restData['openTime'] = timings;
 
         let dishTypes = '';
-        res.data.restaurant_dishtypes.forEach((ele) => {
+        res.data.type.forEach((ele) => {
           dishTypes = dishTypes + ele.rdt_type + ' ';
         });
 
@@ -156,7 +157,7 @@ function RestaurantDishes() {
         let dishObj = {};
 
         res.data.dishes.forEach((ele) => {
-          dishObj[ele.d_id] = false;
+          dishObj[ele._id] = false;
         });
 
         // setDishModalIsOpen(dishObj);
@@ -213,9 +214,9 @@ function RestaurantDishes() {
                 xs={2}
                 key={index}
                 style={{ marginTop: '30px' }}
-                key={ele.d_id}
+                key={ele._id}
                 onClick={() => {
-                  setSelectedDishId(ele.d_id);
+                  setSelectedDishId(ele._id);
                   setDishModalIsOpen(true);
                 }}
               >
@@ -224,16 +225,16 @@ function RestaurantDishes() {
                     <Card.Img
                       variant="top"
                       src={
-                        ele.dish_imgs.length > 0 ? ele.dish_imgs[0].di_img : ''
+                        ele.imageLink.length > 0 ? ele.imageLink[0].imageLink : ''
                       }
                       style={{ height: '200px' }}
                     />
                   </div>
                   <Card.Header>
-                    <h5 style={{ fontWeight: 'bold' }}>{ele.d_name}</h5>
+                    <h5 style={{ fontWeight: 'bold' }}>{ele.name}</h5>
                   </Card.Header>
                   <ListGroup variant="flush">
-                    <ListGroup.Item>{ele.d_desc}</ListGroup.Item>
+                    <ListGroup.Item>{ele.description}</ListGroup.Item>
                     <ListGroup.Item>
                       <div
                         style={{
@@ -243,11 +244,11 @@ function RestaurantDishes() {
                       >
                         <div>
                           {' '}
-                          {ele.d_type} {' : '}
-                          {ele.d_category}
+                          {ele.type} {' : '}
+                          {ele.category}
                         </div>
                         <div>
-                          <h6>${ele.d_price}</h6>
+                          <h6>${ele.price}</h6>
                         </div>
                       </div>
                     </ListGroup.Item>

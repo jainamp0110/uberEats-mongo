@@ -48,7 +48,6 @@ function App() {
                 <Route path="/mediaUploader" component={MediaUploader} />
                 <Route path="/restaurant/orders/" component={AccessComponent(RestaurantOrders)} />   
                 <Route path="/restaurant/dishes" component={AccessComponent(RestaurantDishes)} />  
-                <Route path="/restaurant/dishes" component={AccessComponent(RestaurantDishes)} />  
                 <Route path="/" component={Login} />
               </Switch>
             </Router>

@@ -1,5 +1,5 @@
-import toast from "react-hot-toast";
-import axiosInstance from "../axiosConfig";
+import toast from 'react-hot-toast';
+import axiosInstance from '../axiosConfig';
 import {
   DISH_CREATE_FAILURE,
   DISH_CREATE_REQUEST,
@@ -8,7 +8,7 @@ import {
   DISH_IMAGE_UPLOAD_FAILURE,
   DISH_IMAGE_UPLOAD_REQUEST,
   DISH_IMAGE_UPLOAD_SUCCESS,
-} from "./types";
+} from './types';
 
 export function dishImageUploadRequest() {
   return {
@@ -22,11 +22,11 @@ export function dishImageUploadSuccess(did, link) {
       .post(
         `/dishes/images/${did}`,
         {
-          img: link,
+          imageLink: {imageLink: link},
         },
         {
           headers: {
-            Authorization: localStorage.getItem("token"),
+            Authorization: localStorage.getItem('token'),
           },
         }
       )
@@ -35,10 +35,10 @@ export function dishImageUploadSuccess(did, link) {
           type: DISH_IMAGE_UPLOAD_SUCCESS,
           payload: res.data,
         });
-        toast.success("Dish Image Uploaded");
+        toast.success('Dish Image Uploaded');
       })
       .catch((err) => {
-        toast.error("Error Uploading Dish Image");
+        toast.error('Error Uploading Dish Image');
         console.error(err);
       });
   };
