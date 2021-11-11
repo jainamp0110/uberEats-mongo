@@ -44,7 +44,7 @@ function Login() {
         dispatch(loginCustomerRequest());
         const response = await axiosInstance.post('auth/login', data);
         const tokenData = jwt.decode(response.data.token);
-        const id = tokenData.c_id;
+        const id = tokenData.id;
         dispatch(loginCustomerSuccess(id, response.data.token));
         localStorage.setItem('token', response.data.token);
         toast.success('Logged in!');
@@ -57,7 +57,7 @@ function Login() {
           password: password,
         });
         const tokenData = jwt.decode(response.data.token);
-        const id = tokenData.r_id;
+        const id = tokenData.id;
         dispatch(loginRestaurantSuccess(id, response.data.token));
         localStorage.setItem('token', response.data.token);
         toast.success('Logged in!');

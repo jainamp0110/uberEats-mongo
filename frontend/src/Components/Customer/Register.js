@@ -48,7 +48,7 @@ function Register() {
         };
         const response = await axiosInstance.post('auth/register', data);
         const tokenData = jwt.decode(response.data.token);
-        const id = tokenData.c_id;
+        const id = tokenData.id;
 
         dispatch(registerCustomerSuccess(id, response.data.token));
 
@@ -71,7 +71,7 @@ function Register() {
         };
         const response = await axiosInstance.post('auth/resregister', data);
         const tokenData = jwt.decode(response.data.token);
-        const id = tokenData.r_id;
+        const id = tokenData.id;
         dispatch(registerRestaurantSuccess(id, response.data.token));
         localStorage.setItem('token', response.data.token);
         toast.success('Successfully registered!');

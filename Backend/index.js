@@ -12,13 +12,13 @@ const { sequelize } = require('./models/data.model');
 
 sequelize.sync();
 
-const authRouter = require('./routes/auth');
+const authRouter = require('./routes/auth.routes');
 const { validateToken } = require('./config/validateToken');
 const restaurant = require('./routes/restaurant.routes');
 const dishes = require('./routes/dish.routes');
 const customers = require('./routes/customer.routes');
-const cart = require('./routes/cart');
-const orders = require('./routes/orders');
+const cart = require('./routes/cart.routes');
+const orders = require('./routes/orders.routes');
 const accessControl = require('./controllers/accessController');
 
 const expressSwagger = require('express-swagger-generator')(app);

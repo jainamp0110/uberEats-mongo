@@ -48,42 +48,42 @@ function RestaurantDashboard() {
       history.push('/');
     }
     const tokenData = jwt.decode(token);
-    if (tokenData.role === 'customer' || !tokenData.r_id) {
+    if (tokenData.role === 'customer' || !tokenData.id) {
       history.push('/');
     }
 
     axiosInstance
-      .get(`restaurant/rest/${tokenData.r_id}`, {
+      .get(`restaurant/rest/${tokenData.id}`, {
         headers: {
           Authorization: token,
         },
       })
       .then((res) => {
         console.log(res.data);
-        setimages(res.data.restaurant_imgs);
+        setimages(res.data.imageLink);
         const newDataObject = {};
-        newDataObject['name'] = res.data.r_name;
-        newDataObject['desc'] = res.data.r_desc;
+        newDataObject['name'] = res.data.name;
+        newDataObject['description'] = res.data.description;
 
         const tempArr = [];
 
         res.data.restaurant_dishtypes?.forEach((ele) => {
-          tempArr.push({ dish_type: ele.rdt_type });
+          tempArr.push({ type: ele.type });
         });
 
         console.log(tempArr);
 
-        newDataObject['dish_type'] = tempArr;
-        newDataObject['address_line'] = res.data.r_address_line;
-        newDataObject['city'] = [{ city: res.data.r_city }];
-        newDataObject['state'] = [{ state: res.data.r_state }];
-        newDataObject['zipcode'] = res.data.r_zipcode;
-        newDataObject['contact'] = res.data.r_contact_no;
-        newDataObject['delivery_type'] = [
-          { delivery_type: res.data.r_delivery_type },
+        newDataObject['type'] = tempArr;
+        newDataObject['addressLine'] = res.data.addressLine;
+        newDataObject['city'] = [{ city: res.data.city }];
+        newDataObject['state'] = [{ state: res.data.state }];
+        newDataObject['zipcode'] = res.data.zipcode;
+        newDataObject['contactNum'] = res.data.contactNum;
+        newDataObject['deliveryType'] = [
+          { deliveryType: res.data.deliveryType },
         ];
 
-        const sTime = res.data.r_start ? res.data.r_start.split(':') : null;
+        const sTime = res.data.startTime ? res.data.startTime.split(':') : null;
         const s = new Date(
           2021,
           10,
@@ -93,8 +93,8 @@ function RestaurantDashboard() {
           sTime?.length > 0 ? sTime[2] : null,
           0,
         );
-        newDataObject['start'] = s;
-        const eTime = res.data.r_end ? res.data.r_end.split(':') : null;
+        newDataObject['startTime'] = s;
+        const eTime = res.data.endTime ? res.data.endTime.split(':') : null;
         const e = new Date(
           2021,
           10,
@@ -104,7 +104,7 @@ function RestaurantDashboard() {
           eTime?.length > 0 ? eTime[2] : null,
           0,
         );
-        newDataObject['end'] = e;
+        newDataObject['endTime'] = e;
         setformDetails(newDataObject);
       });
   };
@@ -118,13 +118,13 @@ function RestaurantDashboard() {
     setUpdating(true);
     const dishTypes = [];
     console.log('Dish Type', dishTypes);
-    formDetails.dish_type.forEach((ele) => {
-      dishTypes.push(ele.dish_type);
+    formDetails.type.forEach((ele) => {
+      dishTypes.push(ele.type);
     });
 
-    formDetails.dish_types = dishTypes;
+    formDetails.types = dishTypes;
     formDetails.city = formDetails.city[0].city;
-    formDetails.delivery_type = formDetails.delivery_type[0].delivery_type;
+    formDetails.deliveryType = formDetails.deliveryType[0].deliveryType;
     formDetails.state = formDetails.state[0].state;
 
     var startTime = formDetails.start.toLocaleTimeString();
@@ -140,13 +140,13 @@ function RestaurantDashboard() {
       history.push('/');
     }
     const tokenData = jwt.decode(token);
-    if (tokenData.role === 'customer' || !tokenData.r_id) {
+    if (tokenData.role === 'customer' || !tokenData.id) {
       history.push('/');
     }
 
     try {
       console.log('Form Details', formDetails);
-      await axiosInstance.put(`restaurant/${tokenData.r_id}`, formDetails, {
+      await axiosInstance.put(`restaurant/${tokenData.id}`, formDetails, {
         headers: {
           Authorization: token,
         },
@@ -264,14 +264,14 @@ function RestaurantDashboard() {
                 </FormControl>
                 <FormControl label="Restaurant Description">
                   <Input
-                    id="desc"
+                    id="description"
                     autoComplete="off"
                     placeholder="Enter Description"
-                    value={formDetails.desc}
+                    value={formDetails.description}
                     onChange={(e) =>
                       setformDetails({
                         ...formDetails,
-                        desc: e.target.value,
+                        description: e.target.value,
                       })
                     }
                   />
@@ -281,18 +281,18 @@ function RestaurantDashboard() {
                   <Select
                     multi
                     options={[
-                      { dish_type: 'Veg' },
-                      { dish_type: 'Non-Veg' },
-                      { dish_type: 'Vegan' },
+                      { type: 'Veg' },
+                      { type: 'Non-Veg' },
+                      { type: 'Vegan' },
                     ]}
-                    valueKey="dish_type"
-                    labelKey="dish_type"
+                    valueKey="type"
+                    labelKey="type"
                     placeholder="Select Dish Types"
-                    value={formDetails.dish_type}
+                    value={formDetails.type}
                     onChange={({ value }) =>
                       setformDetails({
                         ...formDetails,
-                        dish_type: value,
+                        type: value,
                       })
                     }
                   />
@@ -300,14 +300,14 @@ function RestaurantDashboard() {
 
                 <FormControl label="Address Line">
                   <Input
-                    id="address_line"
+                    id="addressLine"
                     autoComplete="off"
                     placeholder="Enter Address Line"
-                    value={formDetails.address_line}
+                    value={formDetails.addressLine}
                     onChange={(e) =>
                       setformDetails({
                         ...formDetails,
-                        address_line: e.target.value,
+                        addressLine: e.target.value,
                       })
                     }
                   />
@@ -386,18 +386,18 @@ function RestaurantDashboard() {
                 <FormControl label="Delivery Type">
                   <Select
                     options={[
-                      { delivery_type: 'Pickup' },
-                      { delivery_type: 'Delivery' },
-                      { delivery_type: 'Both' },
+                      { deliveryType: 'Pickup' },
+                      { deliveryType: 'Delivery' },
+                      { deliveryType: 'Both' },
                     ]}
-                    valueKey="delivery_type"
-                    labelKey="delivery_type"
+                    valueKey="deliveryType"
+                    labelKey="deliveryType"
                     placeholder=""
-                    value={formDetails.delivery_type}
+                    value={formDetails.deliveryType}
                     onChange={({ value }) =>
                       setformDetails({
                         ...formDetails,
-                        delivery_type: value,
+                        deliveryType: value,
                       })
                     }
                   />
