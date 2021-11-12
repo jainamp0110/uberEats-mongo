@@ -4,7 +4,7 @@ import { Col, Row } from 'react-bootstrap';
 import toast from 'react-hot-toast';
 import axiosConfig from '../../axiosConfig';
 import CustomerNavbar from './CustomerNavbar';
-import { Button } from 'baseui/button';
+import { Button, SIZE } from 'baseui/button';
 import { useHistory } from 'react-router';
 import {
   Modal,
@@ -37,9 +37,9 @@ function CustomerOrders() {
         console.log(res.data);
       })
       .catch((err) => {
-        if (err.response.status === 404) {
-          toast.error('NO Order Found');
-        }
+        // if (err.response.status === 404) {
+        //   toast.error('NO Order Found');
+        // }
         console.log(err);
       });
   };
@@ -60,6 +60,30 @@ function CustomerOrders() {
         console.log(err);
       });
   };
+
+  const cancelOrder = (oid) => {
+    console.log(oid);
+    const token = localStorage.getItem('token');
+    axiosConfig
+      .put(
+        `/orders/updatestatus/${String(oid)}`,
+        { status: 'Cancelled' },
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res.data);
+        toast.success('Order cancelled!');
+        getCustOrders();
+      })
+      .catch((err) => {
+        toast.error('Cannot cancel order!');
+        console.log(err);
+      });
+  };
   return (
     <div>
       <CustomerNavbar />
@@ -76,17 +100,17 @@ function CustomerOrders() {
                 <H5>Total</H5>
               </Col>
               <Col xs={4}>
-                <H6> $ {orderDetails.o_final_price}</H6>
+                <H6> $ {orderDetails?.orderDetails?.finalPrice?.toFixed(2)}</H6>
               </Col>
             </Row>
-            {orderDetails?.order_dishes?.length > 0
-              ? orderDetails.order_dishes.map((dish) => {
+            {orderDetails?.orderDetails?.dishes?.length > 0
+              ? orderDetails?.orderDetails?.dishes.map((dish, index) => {
                   return (
                     <Row>
                       <Col style={{ textAlign: 'left' }}>
-                        {dish?.dish.d_name}
+                        {orderDetails?.dishName[index]} x {dish?.qty}
                       </Col>
-                      <Col xs={4}>${dish?.dish.d_price}</Col>
+                      <Col xs={4}>${dish?.price}</Col>
                     </Row>
                   );
                 })
@@ -113,63 +137,92 @@ function CustomerOrders() {
                         marginTop: '20px',
                       }}
                     >
+                      <Col>
+                        <img
+                          className='col-sm-12'
+                          src={
+                            order?.restImage ? order.restImage?.imageLink : ''
+                          }
+                          alt='sans'
+                          style={{ height: '100%' }}
+                          onClick={() =>
+                            history.push(
+                              `/customer/restaurant/${order?.restId}`
+                            )
+                          }
+                        />
+                      </Col>
                       <Col
-                        xs={10}
+                        xs={7}
                         style={{ textAlign: 'left', marginLeft: '2%' }}
                       >
                         <H5>
                           <a
                             onClick={() =>
                               history.push(
-                                `/customer/restaurant/${order?.restaurant?.r_id}`,
+                                `/customer/restaurant/${order?.resId}`
                               )
                             }
                           >
                             {' '}
-                            {order.restaurant.r_name}{' '}
+                            {order?.restName}{' '}
                           </a>{' '}
                         </H5>
                         <p>
-                          {order.order_dishes.length} items <br />
-                          For ${order.o_final_price} <br />
-                          {new Date(order.o_date_time).toUTCString()} <br />
-                          Order Type: {order.o_type} <br />
+                          {order?.dishes.length} items <br />
+                          For ${(order?.finalPrice).toFixed(2)} <br />
+                          {new Date(order?.dateTime).toUTCString()} <br />
+                          Order Type: {order?.orderType} <br />
                           <br />
+                          Order status:{' '}
+                          <span style={{ fontWeight: 'bold' }}>
+                            {order.status}
+                          </span>
                         </p>
                       </Col>
                       <Col style={{ marginRight: '' }}>
                         <Button
-                          style={{ width: '200px' }}
+                          style={{ width: '100%' }}
                           onClick={async () => {
-                            await getOrderDetails(order.o_id);
+                            await getOrderDetails(String(order._id));
                             setOrderModalIsOpen(true);
                           }}
                         >
                           View receipt
                         </Button>
-                        <p style={{ marginTop: '40px' }}>
-                          Order status:{' '}
-                          <span style={{ fontWeight: 'bold' }}>
-                            {order.o_status}
-                          </span>
-                        </p>
-                        {/* <Button
-                          size={SIZE.large}
+                        <Button
                           onClick={() =>
-                            history.push(
-                              `/customer/restaurants${orderRestImage.restId}`
-                            )
+                            history.push(`/customer/restaurant/${order?.resId}`)
                           }
                           $style={{
-                            width: "100%",
-                            display: "flex",
-                            justifyContent: "center",
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            marginTop: '5%',
                           }}
                         >
-                          <span style={{ justifyContent: "center" }}>
+                          <span style={{ justifyContent: 'center' }}>
                             View store
                           </span>
-                        </Button> */}
+                        </Button>
+
+                        {order?.status === 'Initialized' ||
+                        order?.status === 'Placed' ? (
+                          <Button
+                            onClick={() => cancelOrder(order?._id)}
+                            $style={{
+                              width: '100%',
+                              display: 'flex',
+                              justifyContent: 'center',
+                              marginTop: '5%',
+                              backgroundColor: 'red',
+                            }}
+                          >
+                            <span style={{ justifyContent: 'center' }}>
+                              Cancel
+                            </span>
+                          </Button>
+                        ) : null}
                       </Col>
                     </div>
                     <hr />

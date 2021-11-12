@@ -131,11 +131,15 @@ const updateOrder = async (req, res) => {
   const { status } = req.body;
   const { oid } = req.params;
 
+  const o = await Order.findOne({
+    _id: mongoose.Types.ObjectId(String(oid)),
+  });
+  
   if (
     req.headers.role === 'customer' &&
     status === 'Cancelled' &&
-    status !== 'Initialized' &&
-    status !== 'Placed'
+    o.status !== 'Initialized' &&
+    o.status !== 'Placed'
   ) {
     return res.status(409).send({ error: 'Order cannot be cancelled' });
   }
@@ -339,82 +343,103 @@ const getOrders = async (req, res) => {
 };
 
 const getOrderById = async (req, res) => {
+  console.log('bruhehehehe2222');
+
   const {role, id} = req.headers;
   const {oid} = req.params;
 
   let orderDetails = {};
-  if (role === 'restaurant') {
-    orderDetails = await Order.aggregate([
-      {
-        $lookup: {
-          from: 'customers',
-          localField: 'custId',
-          foreignField: '_id',
-          as: 'customer',
+  let dishName = [];
+
+  try{
+    if (role === 'restaurant') {
+      orderDetails = await Order.aggregate([
+        {
+          $lookup: {
+            from: 'customers',
+            localField: 'custId',
+            foreignField: '_id',
+            as: 'customer',
+          },
         },
-      },
-      {
-        $lookup: {
-          from: 'restaurants',
-          localField: 'resId',
-          foreignField: '_id',
-          as: 'restaurant',
+        {
+          $lookup: {
+            from: 'restaurants',
+            localField: 'resId',
+            foreignField: '_id',
+            as: 'restaurant',
+          },
         },
-      },
-      {
-        $match: {
-          _id: mongoose.Types.ObjectId(String(oid)),
-          resId: mongoose.Types.ObjectId(String(id)),
+        {
+          $match: {
+            _id: mongoose.Types.ObjectId(String(oid)),
+            resId: mongoose.Types.ObjectId(String(id)),
+          },
         },
-      },
-    ]);
-    if(orderDetails){
-      orderDetails.forEach((item) => {
-        item['custName'] = item.customer[0].name;
-        item['deliveryType'] = item.restaurant[0].deliveryType;
-        if (item.restaurant[0].imageLink.length > 0) {
-          item['restImage'] = item.restaurant[0].imageLink[0];
-        } else {
-          item['restImage'] = '';
-        }
-        delete item.restaurant;
-        delete item.customer;
-      });
-      return res.status(200).send(orderDetails[0]);
+      ]);
+      if(orderDetails){
+        orderDetails.forEach((item) => {
+          item['custName'] = item.customer[0].name;
+          item['deliveryType'] = item.restaurant[0].deliveryType;
+          if (item.restaurant[0].imageLink.length > 0) {
+            item['restImage'] = item.restaurant[0].imageLink[0];
+          } else {
+            item['restImage'] = '';
+          }
+  
+          const dishName = [];
+          item.dishes.forEach((dish) => {
+            const n = item.restaurant.dishes.filter((ele) => String(ele._id) === String(dish.id))[0].name;
+            dishName.push(n);
+          });
+          delete item.restaurant;
+          delete item.customer;
+        });
+        return res.status(200).send({orderDetails: orderDetails[0], dishName});
+      }
+      return res.status(404).send({error: 'Restaurant Order Not found'});
+    }else{
+      orderDetails = await Order.aggregate([
+        {
+          $lookup: {
+            from: 'restaurants',
+            localField: 'resId',
+            foreignField: '_id',
+            as: 'restaurant',
+          },
+        },
+        {
+          $match: {
+            _id: mongoose.Types.ObjectId(String(oid)),
+            custId: mongoose.Types.ObjectId(String(id)),
+          },
+        },
+      ]);
+      if(orderDetails){
+        orderDetails.forEach((item) => {
+          item['name'] = item.restaurant[0].name;
+          item['deliveryType'] = item.restaurant[0].deliveryType;
+          if (item.restaurant[0].imageLink.length > 0) {
+            item['restImage'] = item.restaurant[0].imageLink[0];
+          } else {
+            item['restImage'] = '';
+          }
+          console.log(item);
+          item.dishes.forEach((dish) => {
+            const n = item.restaurant[0].dishes.filter((ele) => String(ele._id) === String(dish.id))[0].name;
+            dishName.push(n);
+          });
+          delete item.restaurant;
+        });
+        return res.status(200).send({orderDetails: orderDetails[0], dishName});
+      }
+      return res.status(404).send({error: 'Customer Order Not found'});
     }
-    return res.status(404).send({error: 'Restaurant Order Not found'});
-  }else{
-    orderDetails = await Order.aggregate([
-      {
-        $lookup: {
-          from: 'restaurants',
-          localField: 'resId',
-          foreignField: '_id',
-          as: 'restaurant',
-        },
-      },
-      {
-        $match: {
-          _id: mongoose.Types.ObjectId(String(oid)),
-          custId: mongoose.Types.ObjectId(String(id)),
-        },
-      },
-    ]);
-    if(orderDetails){
-      orderDetails.forEach((item) => {
-        item['name'] = item.restaurant[0].name;
-        item['deliveryType'] = item.restaurant[0].deliveryType;
-        if (item.restaurant[0].imageLink.length > 0) {
-          item['restImage'] = item.restaurant[0].imageLink[0];
-        } else {
-          item['restImage'] = '';
-        }
-        delete item.restaurant;
-      });
-      return res.status(200).send(orderDetails[0]);
-    }
-    return res.status(404).send({error: 'Customer Order Not found'});
+  }catch(err){
+    console.log(err);
+    return res.status(500).send({error: err});
   }
+
 };
 
 module.exports = {

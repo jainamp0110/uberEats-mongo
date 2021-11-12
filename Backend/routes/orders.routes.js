@@ -66,7 +66,7 @@ router.put('/finalorder/:id', placeOrder);
 */
 
 /**
- * @route PUT /orders/finalorder/{id}
+ * @route PUT /orders/updatestatus/{id}
  * @group Order
  * @param {string} id.path.required
  * @param {UpdateStatus.model} UpdateStatus.body.required 

@@ -143,7 +143,7 @@ function PlaceOrder({ match }) {
       .catch((err) => {
         console.log(err);
         toast.error('Order Not Found');
-        // history.push('/customer/dashboard');
+        history.push('/customer/dashboard');
         console.log(err.response.data);
       });
   };
