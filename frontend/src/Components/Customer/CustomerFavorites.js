@@ -6,11 +6,34 @@ import { Card, Col, ListGroup, Row } from 'react-bootstrap';
 import { useHistory } from 'react-router';
 import HeartSvg from './HeartSvg';
 import { H6 } from 'baseui/typography';
+import toast from 'react-hot-toast';
+
 
 function CustomerFavorites() {
   const [fvrtRests, setFvrtRests] = useState([]);
   const history = useHistory();
 
+  const removeFromFavorite = (rid) => {
+    const token = localStorage.getItem('token');
+    axiosConfig
+      .delete(
+        `/customers/fvrts/${rid}`,
+        {
+          headers: {
+            Authorization: token,
+          },
+        },
+      )
+      .then((res) => {
+        getAllFavorites();
+        toast.success('Removed From Favorites');
+      })
+      .catch((err) => {
+        toast.error();
+        console.log(err);
+      });
+  };
+ 
   const getAllFavorites = () => {
     const token = localStorage.getItem('token');
     axiosConfig
@@ -20,8 +43,9 @@ function CustomerFavorites() {
         },
       })
       .then((res) => {
-        setFvrtRests(res.data);
+        // console.log(object)
         console.log(res.data);
+        setFvrtRests(res.data);
       })
       .catch((err) => {
         console.log(err);
@@ -45,7 +69,7 @@ function CustomerFavorites() {
             <Col xs={3} style={{ marginTop: '30px' }}>
               <div
                 onClick={() => {
-                  history.push(`/customer/restaurant/${ele.r_id}`);
+                  history.push(`/customer/restaurant/${ele._id}`);
                 }}
                 style={{ height: '100%' }}
               >
@@ -54,8 +78,8 @@ function CustomerFavorites() {
                     <Card.Img
                       variant="top"
                       src={
-                        ele.restaurant?.restaurant_imgs?.length > 0
-                          ? ele?.restaurant?.restaurant_imgs[0].ri_img
+                        ele.imageLink?.length > 0
+                          ? ele.imageLink[0].imageLink
                           : 'https://ubereats-media.s3.amazonaws.com/defaultRest.png'
                       }
                       style={{ height: '300px', width: '100%' }}
@@ -63,6 +87,7 @@ function CustomerFavorites() {
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
+                        removeFromFavorite(ele?._id);
                       }}
                     >
                       <HeartSvg />
@@ -71,14 +96,14 @@ function CustomerFavorites() {
                   <Card.Body>
                     <ListGroup variant="flush">
                       <ListGroup.Item>
-                        <H6>{ele?.restaurant?.r_name}</H6>
+                        <H6>{ele?.name}</H6>
                       </ListGroup.Item>
                       <ListGroup.Item>
-                        {ele?.restaurant?.r_city
-                          ? ele?.restaurant?.r_city + ', '
+                        {ele?.city
+                          ? ele?.city + ', '
                           : ''}
-                        {ele?.restaurant?.r_state
-                          ? ele?.restaurant?.r_state
+                        {ele?.state
+                          ? ele?.state
                           : ''}
                       </ListGroup.Item>
                     </ListGroup>

@@ -43,9 +43,9 @@ function ShowDishModal(props) {
 
   useEffect(() => {
     if (dishes && selectedDishId) {
-      let selectedDish = dishes.filter((dish) => dish.d_id === selectedDishId);
+      let selectedDish = dishes.filter((dish) => dish._id === selectedDishId);
       if (selectedDish.length > 0) {
-        setDishImages(selectedDish[0].dish_imgs);
+        setDishImages(selectedDish[0].imageLink);
         setDishDetails(selectedDish);
       }
     }
@@ -163,7 +163,7 @@ function ShowDishModal(props) {
           <Carousel showArrows showThumbs={false} width="100%">
             {dishImages?.length > 0
               ? dishImages.map((ele) => (
-                  <img src={ele.di_img} style={{ borderRadius: '20px' }} />
+                  <img src={ele.imageLink} style={{ borderRadius: '20px' }} />
                 ))
               : null}
           </Carousel>
@@ -176,20 +176,20 @@ function ShowDishModal(props) {
               width: '95%',
             }}
           >
-            <H5>{dishDetails ? dishDetails[0]?.d_name : ''}</H5>
-            <H5>${dishDetails ? dishDetails[0]?.d_price : ''}</H5>
+            <H5>{dishDetails ? dishDetails[0]?.name : ''}</H5>
+            <H5>${dishDetails ? dishDetails[0]?.price : ''}</H5>
           </div>
           <hr />
           <h6>Description:</h6>
           <h6>
             <div style={{ color: 'gray' }}>
-              {dishDetails ? dishDetails[0]?.d_desc : ''}
+              {dishDetails ? dishDetails[0]?.description : ''}
             </div>
           </h6>
           <h6>Ingredients:</h6>
           <h6>
             <div style={{ color: 'gray' }}>
-              {dishDetails ? dishDetails[0]?.d_ingredients : ''}
+              {dishDetails ? dishDetails[0]?.ingredients : ''}
             </div>
           </h6>
         </div>
@@ -198,8 +198,8 @@ function ShowDishModal(props) {
           <Row style={{ marginTop: '-25px' }}>
             <Col style={{ textAlign: 'left', marginTop: '10px' }}>
               <h5>
-                {dishDetails ? dishDetails[0]?.d_category + ' - ' : ''}
-                {dishDetails ? dishDetails[0]?.d_type : ''}
+                {dishDetails ? dishDetails[0]?.category + ' - ' : ''}
+                {dishDetails ? dishDetails[0]?.type : ''}
               </h5>
             </Col>
             <Col>

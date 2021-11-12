@@ -240,11 +240,8 @@ const deleteCustomer = async (req, res) => {
 
 const getCustomerProfile = async (req, res) => {
   const custId = req.headers.id;
-  const cust = await customers.findOne({
-    where: {
-      c_id: custId,
-    },
-    attributes: { exclude: ['c_password', 'createdAt', 'updatedAt'] },
+  const cust = await Customer.findOne({
+      _id: mongoose.Types.ObjectId(custId),
   });
 
   console.log(cust);
@@ -255,16 +252,20 @@ const getCustomerProfile = async (req, res) => {
 };
 
 const getCustomerById = async (req, res) => {
-  const cust = await customers.findOne({
-    where: {
-      c_id: req.params.cid,
-    },
-    attributes: { exclude: ['c_password', 'createdAt', 'updatedAt'] },
-  });
-  if (!cust) {
-    return res.status(404).send('Customer does not exists');
+  try{
+      console.log(req.params.cid);
+      const cust = await Customer.findOne({
+        _id: mongoose.Types.ObjectId(String(req.params.cid)),
+      });
+    
+      if (!cust) {
+        return res.status(404).send('Customer does not exists');
+      }
+      return res.status(201).send(cust);
+  }catch(error){
+    console.log(error);
+    return res.status(500).send({error: 'Error getting Customer by Id'});
   }
-  return res.status(201).send(cust);
 };
 
 const getAllCustomers = async (req, res) => {
@@ -338,6 +339,7 @@ const deleteFromFavorites = async (req, res) => {
 };
 
 const getAllFavorites = async (req, res) => {
+  console.log(req.headers.id)
   if (!req.headers.id) {
     return res.status(404).send({ error: 'Customer Id Not Found' });
   }

@@ -87,9 +87,10 @@ function AddDishModal(props) {
       name: dishName,
       price: dishPrice,
       ingredients: dishIngredients,
-      desc: dishDescription,
+      description: dishDescription,
       category: dishCategory[0]?.category ? dishCategory[0].category : '',
       type: dishType[0]?.type ? dishType[0].type : '',
+
     };
 
     checkProperties(dishObj);
@@ -100,8 +101,11 @@ function AddDishModal(props) {
         },
       })
       .then((res) => {
+        console.log('create dish');
         dispatch(dishCreateSuccess(true));
-        const dishId = res.data.dishDetails.d_id;
+        console.log(res);
+        // return;
+        const dishId = res.data.dishId;
         uploadDishImage(dishId);
         toast.success('Dish created');
         setAddDishModalIsOpen(false);
@@ -166,7 +170,7 @@ function AddDishModal(props) {
                 </FormControl>
                 <FormControl label="Description">
                   <Input
-                    id="desc"
+                    id="description"
                     autoComplete="off"
                     placeholder="Enter Description"
                     value={dishDescription}
@@ -175,7 +179,7 @@ function AddDishModal(props) {
                 </FormControl>
                 <FormControl label="Ingredients">
                   <Input
-                    id="desc"
+                    id="ingredients"
                     autoComplete="off"
                     placeholder="Enter Ingredients"
                     value={dishIngredients}

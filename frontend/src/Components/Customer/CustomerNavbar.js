@@ -49,7 +49,7 @@ function CustomerNavbar() {
   const [cartDetails, setCartDetails] = React.useState({});
   const [orderInitModalIsOpen, setOrderInitModalIsOpen] = React.useState(false);
   const [deliveryType, setDeliveryType] = React.useState('Pickup');
-  const [dishType, setDishType] = React.useState(null);
+  const [dishType, setDishType] = React.useState('Any');
   const [keyWord, setKeyWord] = React.useState('');
 
   const [location, setLoc] = React.useState([{ label: 'All' }]);
@@ -79,6 +79,7 @@ function CustomerNavbar() {
     if (dishType === 'Any') {
       dispatch(setDishTypeAction(''));
     } else {
+      console.log('aaaa'+dishType);
       dispatch(setDishTypeAction(dishType));
     }
   }, [dishType]);
@@ -115,8 +116,8 @@ function CustomerNavbar() {
       })
       .catch((err) => {
         console.log(err);
-        toast.error('Session Expired!! Please Sign In Again!!');
-        history.push('/customer/login');
+        // toast.error('Session Expired!! Please Sign In Again!!');
+        // history.push('/login');
       });
   };
 
@@ -285,6 +286,7 @@ function CustomerNavbar() {
                   disabled={itemDisable}
                   onChange={({ value }) => {
                     setdishT(value);
+                    console.log(value[0].label);
                     setDishType(value[0].label);
                   }}
                   value={dishT}
@@ -307,6 +309,7 @@ function CustomerNavbar() {
                     { label: 'San Francisco', id: '#FAEBD7' },
                     { label: 'Santa Cruz', id: '#FAEBD7' },
                     { label: 'Santa Clara', id: '#FAEBD7' },
+                    { label: 'San Diego', id: '#FAEBD7'}
                   ]}
                   disabled={itemDisable}
                   onChange={({ value }) => {

@@ -18,15 +18,16 @@ const createDish = async (req, res) => {
       return res.status(403).send("Provide all Details");
     }
 
+    const dishId = mongoose.Types.ObjectId();
     await Restaurant.findOneAndUpdate(
       {
         _id: req.headers.id,
       },
       {
-        $push: {dishes: req.body},
+        $push: {dishes: {_id: dishId, ...req.body}},
       },
     );
-    res.status(201).send({message: 'Dish created successfully'});
+    res.status(201).send({dishId, message: 'Dish created successfully'});
   } catch (err) {
     res.status(404).send(err);
   }

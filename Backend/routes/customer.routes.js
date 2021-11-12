@@ -62,12 +62,6 @@ router.put('/:cid', customerValidationRules(), validator, updateCustomer);
  */
 router.delete('/:cid', deleteCustomer);
 
-
-router.get('/', getAllCustomers);
-
-router.get('/myprofile', getCustomerProfile);
-router.get('/profile/:cid', getCustomerById);
-
 /**
  * @route GET /customers/fvrts
  * @group Favorites
@@ -159,5 +153,10 @@ router.post('/fvrts', addToFavorites);
  */
 router.delete('/fvrts/:rid', deleteFromFavorites);
 
+router.get('/:cid', getCustomerById);
+
+router.get('/', getAllCustomers);
+
+router.get('/myprofile', getCustomerProfile);
 
 module.exports = router;

@@ -25,7 +25,7 @@ function CustomerDashboard() {
   const getAllRestaurantsByKeyword = () => {
     const token = localStorage.getItem('token');
     axiosConfig
-      .get('/restaurant/all/search', {
+      .get('/restaurants/all/search', {
         params: {
           keyWord: searchFilter.keyWord,
         },
@@ -35,11 +35,8 @@ function CustomerDashboard() {
       })
       .then(async (res) => {
         console.log(res.data);
-        const uniqueData = await _.uniq(res.data, (x) => x.r_id);
+        const uniqueData = await _.uniq(res.data, (x) => x._id);
 
-        uniqueData.forEach((rest) => {
-          rest.restaurant_imgs = [{ ri_img: rest.ri_img }];
-        });
         console.log('res.data', res.data);
         console.log('uni', uniqueData);
         setAllRestDetails(uniqueData);
@@ -54,7 +51,7 @@ function CustomerDashboard() {
     const token = localStorage.getItem('token');
 
     axiosConfig
-      .get('/restaurant/all', {
+      .get('/restaurants/all', {
         params: {
           city: searchFilter.location,
           deliveryType: searchFilter.deliveryType,
@@ -117,7 +114,7 @@ function CustomerDashboard() {
             <Col xs={3} style={{ marginTop: '30px' }}>
               <div
                 onClick={() => {
-                  history.push(`/customer/restaurant/${ele.r_id}`);
+                  history.push(`/customer/restaurant/${ele._id}`);
                 }}
                 style={{ height: '100%' }}
               >
@@ -127,8 +124,8 @@ function CustomerDashboard() {
                       variant="top"
                       src={
                         ele
-                          ? ele.restaurant_imgs?.length > 0
-                            ? ele.restaurant_imgs[0].ri_img
+                          ? ele.imageLink?.length > 0
+                            ? ele.imageLink[0].imageLink
                             : 'https://ubereats-media.s3.amazonaws.com/defaultRest.png'
                           : 'https://ubereats-media.s3.amazonaws.com/defaultRest.png'
                       }
@@ -137,7 +134,7 @@ function CustomerDashboard() {
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
-                        addToFavourite(ele?.r_id);
+                        addToFavourite(ele?._id);
                       }}
                     >
                       <HeartSvg />
@@ -146,11 +143,11 @@ function CustomerDashboard() {
                   <Card.Body>
                     <ListGroup variant="flush">
                       <ListGroup.Item>
-                        <H6>{ele?.r_name}</H6>
+                        <H6>{ele?.name}</H6>
                       </ListGroup.Item>
                       <ListGroup.Item>
-                        {ele.r_city ? ele.r_city + ', ' : ''}
-                        {ele.r_state ? ele.r_state : ''}
+                        {ele.city ? ele.city + ', ' : ''}
+                        {ele.state ? ele.state : ''}
                       </ListGroup.Item>
                     </ListGroup>
                   </Card.Body>

@@ -60,7 +60,7 @@ function PlaceOrder({ match }) {
       .catch((err) => {
         if (err.response.status === 401) {
           toast.error('Session Expired! Please Login Again!');
-          history.push('/customer/login');
+          history.push('/login');
         }
         console.log(err.response.data.error);
       });
@@ -92,7 +92,7 @@ function PlaceOrder({ match }) {
       .catch((err) => {
         if (err.response.status === 401) {
           toast.error('Session Expired! Please Login Again!');
-          history.push('/customer/login');
+          history.push('/login');
         }
         toast.error(err.response.data.error);
       });

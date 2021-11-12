@@ -49,7 +49,7 @@ function UpdateCustomer() {
   const getCustomerData = () => {
     const token = localStorage.getItem('token');
     const tokenData = jwt.decode(token);
-    if (tokenData.c_id === null || tokenData.c_id === undefined) {
+    if (tokenData.id === null || tokenData.id === undefined) {
       toast.error('Unauthorised Access!!');
       history.push('/');
     }
@@ -61,17 +61,17 @@ function UpdateCustomer() {
         },
       })
       .then((res) => {
-        setName(res.data.c_name ? res.data.c_name : '');
-        setEmail(res.data.c_email ? res.data.c_email : '');
-        setCustId(res.data.c_id ? res.data.c_id : '');
-        setDob(res.data.c_dob ? new Date(res.data.c_dob) : '');
-        setContactNo(res.data.c_contact_no ? res.data.c_contact_no : '');
-        setCity(res.data.c_city ? [{ city: res.data.c_city }] : '');
-        setStateName(res.data.c_state ? res.data.c_state : '');
-        setCountry(res.data.c_country ? res.data.c_country : '');
-        setAbout(res.data.c_about ? res.data.c_about : '');
-        setNickName(res.data.c_nick_name ? res.data.c_nick_name : '');
-        setImage(res.data.c_profile_img ? res.data.c_profile_img : '');
+        setName(res.data.name ? res.data.name : '');
+        setEmail(res.data.email ? res.data.email : '');
+        setCustId(res.data._id ? res.data._id : '');
+        setDob(res.data.dob ? new Date(res.data.dob) : '');
+        setContactNo(res.data.contactNum ? res.data.contactNum : '');
+        setCity(res.data.city ? [{ city: res.data.city }] : '');
+        setStateName(res.data.state ? res.data.state : '');
+        setCountry(res.data.country ? res.data.country : '');
+        setAbout(res.data.about ? res.data.about : '');
+        setNickName(res.data.nickName ? res.data.nickName : '');
+        setImage(res.data.imageLink ? res.data.imageLink : '');
         console.log(res.data);
       })
       .catch((err) => {
@@ -101,7 +101,7 @@ function UpdateCustomer() {
         await axiosConfig.put(
           `customers/${custId}`,
           {
-            profile_img: data.location,
+            imageLink: data.location,
           },
           {
             headers: {
@@ -109,9 +109,9 @@ function UpdateCustomer() {
             },
           },
         );
-        toast.success('Hurray!!');
+        // toast.success('Hurray!!');
         setModalIsOpen(false);
-        getCustomerData();
+        // getCustomerData();
       } catch (err) {
         toast.error(err.response.data.error);
       }
@@ -138,17 +138,17 @@ function UpdateCustomer() {
     const custObj = {
       name,
       about,
-      profile_img: image,
-      nname: nickName,
-      contact: finalContact,
-      dob: dob.length > 0 ? dob[0] : '',
+      imageLink: image,
+      nickName: nickName,
+      contactNum: finalContact,
+      dob: dob.length > 0 ? new Date(dob[0]).toString() : '',
       city: city[0]?.city ? city[0].city : '',
       state: stateName,
       country,
     };
 
     checkProperties(custObj);
-
+    
     const token = localStorage.getItem('token');
     axiosConfig
       .put(`/customers/${custId}`, custObj, {
@@ -180,7 +180,7 @@ function UpdateCustomer() {
         <Row style={{ width: '80%' }}>
           <Col>
             <Row>
-              <img src={image} alt="Upload your profile picture" />
+              <img src={image} alt='Upload your profile picture' />
             </Row>
             <Row>
               <Button onClick={() => setModalIsOpen(true)} style={{ marginTop : '20px' }}>Upload Image</Button>
@@ -198,7 +198,7 @@ function UpdateCustomer() {
                 </ModalBody>
                 <ModalFooter>
                   <ModalButton
-                    kind="tertiary"
+                    kind='tertiary'
                     onClick={() => setModalIsOpen(false)}
                   >
                     Close
@@ -210,34 +210,34 @@ function UpdateCustomer() {
           <Col>
             <form onSubmit={updateCustDetails}>
               <div style={{ textAlign: 'left', width: '80%' }}>
-                <FormControl label="Name">
+                <FormControl label='Name'>
                   <Input
-                    id="name"
-                    autoComplete="off"
-                    placeholder="Enter Name"
+                    id='name'
+                    autoComplete='off'
+                    placeholder='Enter Name'
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
                 </FormControl>
-                <FormControl label="Email">
+                <FormControl label='Email'>
                   <Input
-                    id="email"
-                    autoComplete="off"
-                    placeholder="Enter Email"
+                    id='email'
+                    autoComplete='off'
+                    placeholder='Enter Email'
                     value={email}
                     disabled
                   />
                 </FormControl>
-                <FormControl label="About">
+                <FormControl label='About'>
                   <Input
-                    id="about"
-                    autoComplete="off"
-                    placeholder="Enter about"
+                    id='about'
+                    autoComplete='off'
+                    placeholder='Enter about'
                     value={about}
                     onChange={(e) => setAbout(e.target.value)}
                   />
                 </FormControl>
-                <FormControl label="Date of birth">
+                <FormControl label='Date of birth'>
                   <DatePicker
                     maxDate={new Date('2010-01-01T07:00:00.000Z')}
                     minDate={new Date('1960-01-01T07:00:00.000Z')}
@@ -247,25 +247,25 @@ function UpdateCustomer() {
                     }
                   />
                 </FormControl>
-                <FormControl label="Nick Name">
+                <FormControl label='Nick Name'>
                   <Input
-                    id="nickName"
-                    autoComplete="off"
-                    placeholder="Enter Nick Name"
+                    id='nickName'
+                    autoComplete='off'
+                    placeholder='Enter Nick Name'
                     value={nickName}
                     onChange={(e) => setNickName(e.target.value)}
                   />
                 </FormControl>
 
-                <FormControl label="Phone Number">
+                <FormControl label='Phone Number'>
                   <MaskedInput
-                    placeholder="Phone number"
-                    mask="(999) 999-9999"
+                    placeholder='Phone number'
+                    mask='(999) 999-9999'
                     value={contactNo}
                     onChange={(e) => setContactNo(e.target.value)}
                   />
                 </FormControl>
-                <FormControl label="City">
+                <FormControl label='City'>
                   <Select
                     options={[
                       { city: 'San Jose' },
@@ -273,42 +273,42 @@ function UpdateCustomer() {
                       { city: 'New York' },
                       { city: 'Santa Clara' },
                     ]}
-                    valueKey="city"
-                    labelKey="city"
-                    placeholder="Select City"
+                    valueKey='city'
+                    labelKey='city'
+                    placeholder='Select City'
                     value={city}
                     onChange={({ value }) => setCity(value)}
                   />
                 </FormControl>
-                {/* <FormControl label="City">
+                {/* <FormControl label='City'>
                   <Input
-                    id="city"
-                    autoComplete="off"
-                    placeholder="Enter city"
+                    id='city'
+                    autoComplete='off'
+                    placeholder='Enter city'
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                   />
                 </FormControl> */}
-                <FormControl label="State">
+                <FormControl label='State'>
                   <Input
-                    id="state"
-                    autoComplete="off"
-                    placeholder="Enter state"
+                    id='state'
+                    autoComplete='off'
+                    placeholder='Enter state'
                     value={stateName}
                     onChange={(e) => setStateName(e.target.value)}
                   />
                 </FormControl>
-                <FormControl label="Country">
+                <FormControl label='Country'>
                   <Input
-                    id="country"
-                    autoComplete="off"
-                    placeholder="Enter country"
+                    id='country'
+                    autoComplete='off'
+                    placeholder='Enter country'
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
                   />
                 </FormControl>
                 <div style={{ textAlign: 'right' }}>
-                  <Button style={{ width: '100%' }} type="submit">
+                  <Button style={{ width: '100%' }} type='submit'>
                     {isUpdatingUser ? 'Updating Details' : 'Update Details'}
                   </Button>
                 </div>

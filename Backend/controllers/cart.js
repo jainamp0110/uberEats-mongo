@@ -24,7 +24,7 @@ const getCartDetails = async (req, res) => {
   }
 
   const cartItems = await Cart.find({
-    custId: req.headers.id,
+    custId: mongoose.Types.ObjectId(String(req.headers.id)),
     // include: [
     //   {
     //     model: dishes,

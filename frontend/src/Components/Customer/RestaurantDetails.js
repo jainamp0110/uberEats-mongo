@@ -62,95 +62,98 @@ const RestaurantDetails = ({ match }) => {
 
     const tokenData = jwt.decode(token);
     axiosInstance
-      .get(`restaurant/rest/${match.params.restId}`, {
+      .get(`restaurants/rest/${match.params.restId}`, {
         headers: {
           Authorization: token,
         },
       })
       .then((res) => {
         console.log(res.data);
-        setimages(res.data.restaurant_imgs ? res.data.restaurant_imgs : []);
+        setimages(res.data.imageLink ? res.data.imageLink : []);
         const restData = {};
-        restData['name'] = res.data.r_name ? res.data.r_name : '';
+        restData['name'] = res.data.name ? res.data.name : '';
 
         if (
           !(
-            res.data.r_address_line &&
-            res.data.r_city &&
-            res.data.r_state &&
-            res.data.r_zipcode
+            res.data.address &&
+            res.data.city &&
+            res.data.state &&
+            res.data.zipcode
           )
         ) {
-          res.data.r_address_line = '';
-          res.data.r_city = '';
-          res.data.r_state = '';
-          res.data.r_zipcode = null;
+          res.data.address = '';
+          res.data.city = '';
+          res.data.state = '';
+          res.data.zipcode = null;
         }
         let address =
-          res.data.r_address_line +
+          res.data.address +
           ', ' +
-          res.data.r_city +
+          res.data.city +
           ', ' +
-          res.data.r_state +
+          res.data.state +
           ' - ' +
-          res.data.r_zipcode;
+          res.data.zipcode;
         restData['address'] = address;
-        restData['desc'] = res.data.r_desc ? res.data.r_desc : '';
-        restData['contactNo'] = res.data.r_contact ? res.data.r_contact : '';
-        restData['restId'] = res.data.r_id;
+        restData['description'] = res.data.description ? res.data.description : '';
+        restData['contactNum'] = res.data.contactNum ? res.data.contactNum : '';
+        restData['restId'] = res.data._id;
 
-        res.data.r_delivery_type = res.data.r_delivery_type
-          ? res.data.r_delivery_type
+        res.data.deliveryType = res.data.deliveryType
+          ? res.data.deliveryType
           : '';
-        if (res.data.r_delivery_type === 'Both') {
+        if (res.data.deliveryType === 'Both') {
           restData['deliveryType'] = 'Pickup and Delivery';
         } else {
-          restData['deliveryType'] = res.data.r_delivery_type;
+          restData['deliveryType'] = res.data.deliveryType;
         }
 
-        res.data.r_start = res.data.r_start ? res.data.r_start : '';
-        let splitStartTime = res.data.r_start.split(':');
+        // res.data.startTime = res.data.startTime ? res.data.startTime : '';
+        // let splitStartTime = res.data.startTime.split(':');
 
-        let startTime;
-        if (parseInt(splitStartTime[0]) >= 12) {
-          startTime =
-            String(splitStartTime[0] - 12) +
-            ':' +
-            String(splitStartTime[1] + ' PM');
-        } else {
-          startTime =
-            String(splitStartTime[0]) + ':' + String(splitStartTime[1] + ' AM');
-        }
-        res.data.r_end = res.data.r_end ? res.data.r_end : '';
+        // let startTime;
+        // if (parseInt(splitStartTime[0]) >= 12) {
+        //   startTime =
+        //     String(splitStartTime[0] - 12) +
+        //     ':' +
+        //     String(splitStartTime[1] + ' PM');
+        // } else {
+        //   startTime =
+        //     String(splitStartTime[0]) + ':' + String(splitStartTime[1] + ' AM');
+        // }
+        // res.data.endTime = res.data.endTime ? res.data.endTime : '';
 
-        let splitEndTime = res.data.r_end.split(':');
-        let endTime;
-        if (parseInt(splitEndTime[0]) >= 12) {
-          endTime =
-            String(splitEndTime[0] - 12) +
-            ':' +
-            String(splitEndTime[1] + ' PM');
-        } else {
-          endTime =
-            String(splitEndTime[0]) + ':' + String(splitEndTime[1] + ' AM');
-        }
+        // let splitEndTime = res.data.endTime.split(':');
+        // let endTime;
+        // if (parseInt(splitEndTime[0]) >= 12) {
+        //   endTime =
+        //     String(splitEndTime[0] - 12) +
+        //     ':' +
+        //     String(splitEndTime[1] + ' PM');
+        // } else {
+        //   endTime =
+        //     String(splitEndTime[0]) + ':' + String(splitEndTime[1] + ' AM');
+        // }
 
-        let timings = startTime + ' to ' + endTime;
+        const st = new Date(res.data.startTime).getHours() + ':' + new Date(res.data.startTime).getMinutes() + '  ';
+        const en = new Date(res.data.endTime).getHours() + ':' + new Date(res.data.endTime).getMinutes() + '  ';
+
+        let timings = st + ' - ' + en;
         restData['openTime'] = timings;
 
-        let dishTypes = '';
-        res.data.restaurant_dishtypes.forEach((ele) => {
-          dishTypes = dishTypes + ele.rdt_type + ' ';
+        let type = '';
+        res.data.type.forEach((ele) => {
+          type = type + ele.type + ' ';
         });
 
-        restData['dishType'] = dishTypes;
+        restData['dishType'] = type;
 
         res.data.dishes = res.data.dishes ? res.data.dishes : [];
         restData['dishes'] = res.data.dishes;
         let dishObj = {};
 
         res.data.dishes.forEach((ele) => {
-          dishObj[ele.d_id] = false;
+          dishObj[ele._id] = false;
         });
 
         // setDishModalIsOpen(dishObj);
@@ -188,7 +191,7 @@ const RestaurantDetails = ({ match }) => {
         {images?.length > 0
           ? images.map((ele) => (
               <div style={{ height: '500px' }}>
-                <img src={ele.ri_img} />
+                <img src={ele.imageLink} />
                 <p style={{ height: '80px', fontSize: '30px' }}>
                   {restDetails.name}
                 </p>
@@ -199,8 +202,9 @@ const RestaurantDetails = ({ match }) => {
       <br></br>
       <div>
         <Display2>{restDetails.name}</Display2>
-        <H6 style={{ color: 'grey' }}>{restDetails.desc}</H6>
-        <H6 style={{ fontSize: '14px' }}>{restDetails.address}</H6>
+        <H6 style={{ color: 'grey' }}>{restDetails.description}</H6>
+        <H6 style={{ color: 'grey' }}>{restDetails.address}</H6>
+        <H6 style={{ color: 'grey' }}>{restDetails.openTime}</H6>
       </div>
       <div>
         <br></br>
@@ -213,9 +217,9 @@ const RestaurantDetails = ({ match }) => {
                   xs={2}
                   key={index}
                   style={{ marginTop: '30px' }}
-                  key={ele.d_id}
+                  key={ele._id}
                   onClick={() => {
-                    setSelectedDishId(ele.d_id);
+                    setSelectedDishId(ele._id);
                     setDishModalIsOpen(true);
                   }}
                 >
@@ -224,18 +228,18 @@ const RestaurantDetails = ({ match }) => {
                       <Card.Img
                         variant="top"
                         src={
-                          ele.dish_imgs.length > 0
-                            ? ele.dish_imgs[0].di_img
+                          ele.imageLink.length > 0
+                            ? ele.imageLink[0].imageLink
                             : ''
                         }
                         style={{ height: '200px' }}
                       />
                     </div>
                     <Card.Header>
-                      <h5 style={{ fontWeight: 'bold' }}>{ele.d_name}</h5>
+                      <h5 style={{ fontWeight: 'bold' }}>{ele.name}</h5>
                     </Card.Header>
                     <ListGroup variant="flush">
-                      <ListGroup.Item>{ele.d_desc}</ListGroup.Item>
+                      <ListGroup.Item>{ele.description}</ListGroup.Item>
                       <ListGroup.Item>
                         <div
                           style={{
@@ -245,11 +249,11 @@ const RestaurantDetails = ({ match }) => {
                         >
                           <div>
                             {' '}
-                            {ele.d_type} {' : '}
-                            {ele.d_category}
+                            {ele.type} {' : '}
+                            {ele.category}
                           </div>
                           <div>
-                            <h6>${ele.d_price}</h6>
+                            <h6>${ele.price}</h6>
                           </div>
                         </div>
                       </ListGroup.Item>

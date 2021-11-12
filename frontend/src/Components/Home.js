@@ -16,9 +16,9 @@ function Home(props) {
     if (role.length === 0) {
       toast.error('Select a role first!');
     } else if (role[0].label === 'Restaurant') {
-      history.push('/restaurant/login');
+      history.push('/login');
     } else if (role[0].label === 'Customer') {
-      history.push('/customer/login');
+      history.push('/login');
     }
   };
 
@@ -27,9 +27,9 @@ function Home(props) {
     if (role.length === 0) {
       toast.error('Select a role first!');
     } else if (role[0].label === 'Restaurant') {
-      history.push('/restaurant/register');
+      history.push('/register');
     } else if (role[0].label === 'Customer') {
-      history.push('/customer/register');
+      history.push('/register');
     }
   };
 

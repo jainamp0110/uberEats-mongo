@@ -217,10 +217,17 @@ const getRestaurantBySearch = async (req, res) => {
     return res.status(403).send({error: 'login Again!!'});
   } 
 
-  const [data, meta] = await sequelize.query(
-    `select restaurants.*, restaurant_imgs.* from restaurants join restaurant_imgs on restaurants.r_id = restaurant_imgs.r_id join dishes on restaurants.r_id=dishes.r_id WHERE restaurants.r_name like '%${keyWord}%' or restaurants.r_desc like '%${keyWord}%' or dishes.d_name like '%${keyWord}%' `
+  const data = await Restaurant.find({
+    $or: [{
+      name: keyWord,
+      description: keyWord,
+      'dishes.name': keyWord,
+    }],
+  });
+  // const [data, meta] = await sequelize.query(
+  //   `select restaurants.*, restaurant_imgs.* from restaurants join restaurant_imgs on restaurants.r_id = restaurant_imgs.r_id join dishes on restaurants.r_id=dishes.r_id WHERE restaurants.r_name like '%${keyWord}%' or restaurants.r_desc like '%${keyWord}%' or dishes.d_name like '%${keyWord}%' `
 
-    );
+  //   );
   return res.status(200).send(data);
 };
 
@@ -240,14 +247,14 @@ const getAllRestaurants = async (req, res) => {
     }
 
     const searchObject = {
-      r_city: city,
-      r_delivery_type: deliveryType,
+      city: city,
+      deliveryType: deliveryType,
+      type: dishType,
     };
 
     const checkProperties = (obj) => {
       Object.keys(obj).forEach((key) => {
         if (obj[key] === null || obj[key] === '' || obj[key] === undefined) {
-          // eslint-disable-next-line no-param-reassign
           delete obj[key];
         }
       });
@@ -255,77 +262,80 @@ const getAllRestaurants = async (req, res) => {
 
     checkProperties(searchObject);
 
-    let filteredRestaurants = await restaurants.findAll({
-      // limit,
-      // offset,
-      include: [
-        {
-          model: restaurant_imgs,
-          attributes: { exclude: ['createdAt', 'updatedAt'] },
-        },
-      ],
-      attributes: { exclude: ['r_password', 'createdAt', 'updatedAt'] },
-      where: searchObject,
+    const filteredRestaurants = await Restaurant.find({
+      ...searchObject,
     });
+    // let filteredRestaurants = await restaurants.findAll({
+    //   // limit,
+    //   // offset,
+    //   include: [
+    //     {
+    //       model: restaurant_imgs,
+    //       attributes: { exclude: ['createdAt', 'updatedAt'] },
+    //     },
+    //   ],
+    //   attributes: { exclude: ['r_password', 'createdAt', 'updatedAt'] },
+    //   where: searchObject,
+    // });
 
-    if (dishType && dishType.length > 0) {
-      const restaurantsFilteredBydishTypes = await restaurant_dishtypes.findAll(
-        {
-          // limit,
-          // offset,
-          include: [
-            {
-              model: restaurants,
-              attributes: { exclude: ['r_password', 'createdAt', 'updatedAt'] },
-              include: [
-                {
-                  model: restaurant_imgs,
-                  attributes: { exclude: ['createdAt', 'updatedAt'] },
-                },
-              ],
-            },
-          ],
-          attributes: { exclude: ['createdAt', 'updatedAt'] },
-          where: { rdt_type: dishType },
-        }
-      );
+    // if (dishType && dishType.length > 0) {
+    //   const restaurantsFilteredBydishTypes = await restaurant_dishtypes.findAll(
+    //     {
+    //       // limit,
+    //       // offset,
+    //       include: [
+    //         {
+    //           model: restaurants,
+    //           attributes: { exclude: ['r_password', 'createdAt', 'updatedAt'] },
+    //           include: [
+    //             {
+    //               model: restaurant_imgs,
+    //               attributes: { exclude: ['createdAt', 'updatedAt'] },
+    //             },
+    //           ],
+    //         },
+    //       ],
+    //       attributes: { exclude: ['createdAt', 'updatedAt'] },
+    //       where: { rdt_type: dishType },
+    //     }
+    //   );
 
-      if (filteredRestaurants) {
-        if (restaurantsFilteredBydishTypes.length === 0) {
-          console.log('bruh1');
-          return res.status(200).json([]);
-        }
+    //   if (filteredRestaurants) {
+    //     if (restaurantsFilteredBydishTypes.length === 0) {
+    //       console.log('bruh1');
+    //       return res.status(200).json([]);
+    //     }
 
-        const filteredRests = [];
-        restaurantsFilteredBydishTypes.forEach((dishTypeObj) => {
-          const findFlag = _.find(
-            filteredRestaurants,
-            (item) => item.r_id === dishTypeObj.restaurant.r_id
-          );
-          if (findFlag) {
-            filteredRests.push(dishTypeObj.restaurant);
-          }
-        });
-        filteredRestaurants = _.uniq(filteredRests, 'r_id');
-        console.log('bruh2');
-        return res.status(200).json({ filteredRestaurants });
-      }
+    //     const filteredRests = [];
+    //     restaurantsFilteredBydishTypes.forEach((dishTypeObj) => {
+    //       const findFlag = _.find(
+    //         filteredRestaurants,
+    //         (item) => item.r_id === dishTypeObj.restaurant.r_id
+    //       );
+    //       if (findFlag) {
+    //         filteredRests.push(dishTypeObj.restaurant);
+    //       }
+    //     });
+    //     filteredRestaurants = _.uniq(filteredRests, 'r_id');
+    //     console.log('bruh2');
+    //     return res.status(200).json({ filteredRestaurants });
+    //   }
 
-      const filteredRests = [];
-      restaurantsFilteredBydishTypes.forEach((dishTypeObj) => {
-        filteredRests.push(dishTypeObj.restaurant);
-      });
+    //   const filteredRests = [];
+    //   restaurantsFilteredBydishTypes.forEach((dishTypeObj) => {
+    //     filteredRests.push(dishTypeObj.restaurant);
+    //   });
 
-      filteredRestaurants = filteredRests;
-      console.log('bruh3');
-      return res.status(200).json({ filteredRestaurants });
-    }
+    //   filteredRestaurants = filteredRests;
+    //   console.log('bruh3');
+    //   return res.status(200).json({ filteredRestaurants });
+    // }
 
-    if (!filteredRestaurants) {
-      console.log('bruh4');
-      return res.status(200).json({ message: 'No restaurants found!' });
-    }
-    console.log('bruh5');
+    // if (!filteredRestaurants) {
+    //   console.log('bruh4');
+    //   return res.status(200).json({ message: 'No restaurants found!' });
+    // }
+    // console.log('bruh5');
     return res.status(200).json({ filteredRestaurants });
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -341,8 +351,8 @@ const getAllRestaurants = async (req, res) => {
 //   if (!custId) return res.status(404).send({ error: 'Please Login!' });
 
 //   const searchObject = {
-//     r_city: city,
-//     r_delivery_type: delivery,
+//     city: city,
+//     deliveryType: delivery,
 //   };
 
 //   const checkProperties = (obj) => {
@@ -388,7 +398,7 @@ const getAllRestaurants = async (req, res) => {
 //   //       }
 //   //     ],
 //   //     where:{
-//   //       r_city: city,
+//   //       city: city,
 //   //     },
 //   //     attributes: { exclude: ['r_password', 'createdAt', 'updatedAt'] },
 //   //   });
@@ -429,7 +439,7 @@ const getAllRestaurants = async (req, res) => {
 
 //   const rests = await restaurants.findAll({
 //     where:{
-//       r_city: location,
+//       city: location,
 //     },
 //   });
 
