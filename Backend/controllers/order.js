@@ -28,9 +28,9 @@ const createOrder = async (req, res) => {
   //const custId = req.headers.id;
 
   console.log('IN CREATE ORDER');
-  if (!(req.body.addressId && req.body.orderType)) {
-    return res.status(400).send({ message: 'Provide All Details' });
-  }
+  // if (!(req.body.addressId && req.body.orderType)) {
+  //   return res.status(400).send({ message: 'Provide All Details' });
+  // }
 
   const cartDetails = await Cart.find({
     custId: mongoose.Types.ObjectId(req.headers.id),
@@ -74,12 +74,12 @@ const createOrder = async (req, res) => {
     orderObj.dishes = [];
     orderObj.dishes = dishDetails;
     orderObj.status = 'Initialized';
-    if (req.body.notes) {
-      orderObj.notes = req.body.notes;
-    }
-    orderObj.addressId = req.body.addressId;
-    orderObj.dateTime = new Date().toString();
-    orderObj.orderType = req.body.orderType;
+    // if (req.body.notes) {
+    //   orderObj.notes = req.body.notes;
+    // }
+    // orderObj.addressId = req.body.addressId;
+    // orderObj.dateTime = new Date().toString();
+    // orderObj.orderType = req.body.orderType;
 
     orderObj.tax = sum * 0.18;
     orderObj.finalPrice = parseFloat(sum) + parseFloat(orderObj.tax);
@@ -90,7 +90,7 @@ const createOrder = async (req, res) => {
       custId: mongoose.Types.ObjectId(String(req.headers.id)),
     });
 
-    return res.status(201).send({ message: 'Order created successfully' });
+    return res.status(201).send(newO);
   } catch (err) {
     console.log(err);
     return res.status(400).send(err);
@@ -99,17 +99,22 @@ const createOrder = async (req, res) => {
 
 const placeOrder = async (req, res) => {
   try {
+    const updObj = {
+      status: 'Placed',
+      orderType: req.body.orderType,
+      addressId: req.body.addressId,
+      dateTime: new Date().toString(),
+    };
+    if(req.body.notes){
+      updObj.notes = req.body.notes;
+    }
+
     const updateOrder = await Order.findOneAndUpdate(
       {
         _id: mongoose.Types.ObjectId(req.params.id),
       },
       {
-        $set: {
-          status: 'Placed',
-          orderType: req.body.orderType,
-          addressId: req.body.addressId,
-          dateTime: new Date().toString(),
-        },
+        $set: updObj,
       }
     );
 
@@ -334,7 +339,7 @@ const getOrders = async (req, res) => {
 };
 
 const getOrderById = async (req, res) => {
-  const {roke, id} = req.headers;
+  const {role, id} = req.headers;
   const {oid} = req.params;
 
   let orderDetails = {};
@@ -397,6 +402,7 @@ const getOrderById = async (req, res) => {
     ]);
     if(orderDetails){
       orderDetails.forEach((item) => {
+        item['name'] = item.restaurant[0].name;
         item['deliveryType'] = item.restaurant[0].deliveryType;
         if (item.restaurant[0].imageLink.length > 0) {
           item['restImage'] = item.restaurant[0].imageLink[0];

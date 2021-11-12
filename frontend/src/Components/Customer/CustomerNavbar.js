@@ -185,7 +185,7 @@ function CustomerNavbar() {
       )
       .then((res) => {
         console.log(res.data);
-        history.push(`/customer/placeorder/${res.data.orderId}`);
+        history.push(`/customer/placeorder/${res.data._id}`);
       })
       .catch((err) => {
         console.log(err?.response?.data);
@@ -194,7 +194,7 @@ function CustomerNavbar() {
     return;
   };
 
-  console.log('dishT', dishT);
+  // console.log('dishT', dishT);
 
   return (
     <HeaderNavigation style={{ height: '90px' }}>
@@ -217,9 +217,9 @@ function CustomerNavbar() {
                   }),
                 },
               }}
-              name="Akash Rupapara"
-              size="scale1400"
-              src="https://not-a-real-image.png"
+              name='Akash Rupapara'
+              size='scale1400'
+              src='https://not-a-real-image.png'
             />
           </div>
           <div style={{ marginTop: '10%' }}>
@@ -227,19 +227,19 @@ function CustomerNavbar() {
               <Col>
                 <Nav.Link
                   style={{ fontSize: '20px', marginTop: '30px' }}
-                  href="/customer/update"
+                  href='/customer/update'
                 >
                   Update Profile
                 </Nav.Link>
                 <Nav.Link
                   style={{ fontSize: '20px', marginTop: '30px' }}
-                  href="/customer/orders"
+                  href='/customer/orders'
                 >
                   Orders
                 </Nav.Link>
                 <Nav.Link
                   style={{ fontSize: '20px', marginTop: '30px' }}
-                  href="/customer/fvrts"
+                  href='/customer/fvrts'
                 >
                   Favourites
                 </Nav.Link>
@@ -257,7 +257,7 @@ function CustomerNavbar() {
           </div>
         </Drawer>
         <NavigationItem>
-          <a href="/customer/dashboard">
+          <a href='/customer/dashboard'>
             <img src={logo} style={{ width: '150px', height: '90px' }} />
           </a>
         </NavigationItem>
@@ -267,15 +267,15 @@ function CustomerNavbar() {
         style={{ marginTop: '10px', marginLeft: '30px' }}
       >
         <label
-          class="toggleSwitch nolabel"
-          onclick=""
+          class='toggleSwitch nolabel'
+          onclick=''
           style={{ marginTop: '5px' }}
         >
-          <input type="checkbox" disabled={itemDisable} />
+          <input type='checkbox' disabled={itemDisable} />
           <a></a>
           <span>
             <span
-              class="left-span"
+              class='left-span'
               onClick={(e) => {
                 setDeliveryType('Pickup');
               }}
@@ -283,7 +283,7 @@ function CustomerNavbar() {
               Pickup
             </span>
             <span
-              class="right-span"
+              class='right-span'
               onClick={(e) => {
                 setDeliveryType('Delivery');
               }}
@@ -297,7 +297,7 @@ function CustomerNavbar() {
         <NavigationItem style={{ marginTop: '3%' }}>
           <Row>
             <Col>
-              <FormControl label="Select dish type">
+              <FormControl label='Select dish type'>
                 <Select
                   backspaceRemoves={false}
                   clearable={false}
@@ -315,15 +315,15 @@ function CustomerNavbar() {
                     setDishType(value[0].label);
                   }}
                   value={dishT}
-                  valueKey="label"
-                  labelKey="label"
+                  valueKey='label'
+                  labelKey='label'
                   disabled={itemDisable}
-                  placeholder="Set dish type"
+                  placeholder='Set dish type'
                 />
               </FormControl>
             </Col>
             <Col style={{ width: '200px' }}>
-              <FormControl label="Location">
+              <FormControl label='Location'>
                 <Select
                   backspaceRemoves={false}
                   clearable={false}
@@ -346,14 +346,14 @@ function CustomerNavbar() {
                     }
                   }}
                   value={location}
-                  valueKey="label"
-                  labelKey="label"
-                  placeholder="Set location"
+                  valueKey='label'
+                  labelKey='label'
+                  placeholder='Set location'
                 />
               </FormControl>
 
               {/* <Form.Control
-                  as="select"
+                  as='select'
                   custom
                   style={{
                     height: '30px',
@@ -366,11 +366,11 @@ function CustomerNavbar() {
                     dispatch(setLocation(e.target.value));
                   }}
                 >
-                  <option value="">All</option>
-                  <option value="San Jose">San Jose</option>
-                  <option value="San Francisco">San Francisco</option>
-                  <option value="Santa Cruz">Santa Cruz</option>
-                  <option value="Santa Clara">Santa Clara</option>
+                  <option value=''>All</option>
+                  <option value='San Jose'>San Jose</option>
+                  <option value='San Francisco'>San Francisco</option>
+                  <option value='Santa Cruz'>Santa Cruz</option>
+                  <option value='Santa Clara'>Santa Clara</option>
                 </Form.Control> */}
             </Col>
           </Row>
@@ -425,11 +425,11 @@ function CustomerNavbar() {
                     ? cartDetails.cartItems.map((item) => {
                         return (
                           <div
-                            className="card mb-3"
+                            className='card mb-3'
                             style={{ width: '100%', height: '150px' }}
                           >
-                            <div className="row no-gutters">
-                              <div className="col-md-4">
+                            <div className='row no-gutters'>
+                              <div className='col-md-4'>
                                 <img
                                   src={
                                     item.dish.imageLink.length > 0
@@ -443,21 +443,21 @@ function CustomerNavbar() {
                                 />
                                 <title>Placeholder</title>
                                 <rect
-                                  width="100%"
-                                  height="100%"
-                                  fill="#868e96"
+                                  width='100%'
+                                  height='100%'
+                                  fill='#868e96'
                                 />
                               </div>
-                              <div className="col-md-5">
-                                <div className="card-body">
-                                  <h5 className="card-title">
+                              <div className='col-md-5'>
+                                <div className='card-body'>
+                                  <h5 className='card-title'>
                                     {item.dish.name}
                                   </h5>
-                                  <p className="card-text">
+                                  <p className='card-text'>
                                     {cartDetails.restDetails.name}
                                   </p>
                                 </div>
-                                <div className="row no-gutters">
+                                <div className='row no-gutters'>
                                 <div>
                                   <Button
                                     size={SIZE.mini}
@@ -498,8 +498,8 @@ function CustomerNavbar() {
                               </div>
 
                               </div>
-                              <div className="col-md-3">
-                                <div className="card-body">
+                              <div className='col-md-3'>
+                                <div className='card-body'>
                                   <Button
                                     style={{ backgroundColor: 'red' }}
                                     onClick={() => {
@@ -557,7 +557,7 @@ function CustomerNavbar() {
             </ModalBody>
             <ModalFooter>
               <ModalButton
-                kind="tertiary"
+                kind='tertiary'
                 onClick={() => setOrderInitModalIsOpen(false)}
               >
                 Cancel

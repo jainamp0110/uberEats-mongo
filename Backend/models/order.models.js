@@ -27,8 +27,8 @@ const OrderSchema = mongoose.Schema({
         type: String,
     },
     addressId: {
-        type: mongoose.Types.ObjectId, 
-        required: true,
+        type: String, 
+        // required: true,
     },
     status: {
         type: String,
@@ -42,11 +42,11 @@ const OrderSchema = mongoose.Schema({
             'Delivered',
             'Cancelled',
         ],
-        required: true,
+        // required: true,
     },
     dateTime: {
         type: Date,
-        required: true,
+        // required: true,
     },
     orderType: {
         type: String,
