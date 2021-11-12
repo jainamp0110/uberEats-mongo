@@ -23,7 +23,7 @@ const getCartDetails = async (req, res) => {
     return res.status(404).send({error: 'No Items in Cart'});
   }
 
-  const cartItems = await Cart.find({
+  const cart = await Cart.find({
     custId: mongoose.Types.ObjectId(String(req.headers.id)),
     // include: [
     //   {
@@ -36,22 +36,29 @@ const getCartDetails = async (req, res) => {
     // },
   });
 
-  cartItems.forEach(async (ele) => {
-    const tempD = await Restaurant.findOne({
-      _id: mongoose.Types.ObjectId(ele.resId),
-      'dishes._id': mongoose.Types.ObjectId(ele.dishId),
-    });
-    ele = {...ele, ...tempD};
+  const r_id = cart.length>0?cart[0].resId: null;
+
+  const restDetails = await Restaurant.findOne({
+    _id: mongoose.Types.ObjectId(r_id),
   });
-  const r_id = cartItems.length>0?cartItems[0].resId: null;
+
+  const cartItems = [];
+
+  cart.forEach((ele) => {
+
+    const temp = restDetails.dishes.filter((a) => String(a._id) === String(ele.dishId))[0];
+    console.log(ele);
+    console.log(temp);
+    const obj = Object.assign({},ele._doc);
+    obj.dish = temp;
+    cartItems.push(obj);
+    // console.log(obj);
+  });
 
   if(r_id === null){
     return res.status(201).send({message: 'No Items in cart'}); 
   }
 
-  const restDetails = await Restaurant.findOne({
-      _id: r_id,
-  });
   return res.status(201).json({ cartItems, restDetails });
 };
 
@@ -165,10 +172,66 @@ const deleteCartItem = async (req, res) => {
   }
 };
 
+const updateCart = async (req, res) => {
+  if(!req.body.qty){
+    return res.status(400).send('Provide all details');
+  }
+  try {
+    const newCart = await Cart.findOneAndUpdate({
+      _id: mongoose.Types.ObjectId(String(req.params.cartId)),
+    },{
+      $set: {qty: req.body.qty},
+    },{
+      new: true,
+    });
+
+    const cart = await Cart.find({
+      custId: mongoose.Types.ObjectId(String(req.headers.id)),
+      // include: [
+      //   {
+      //     model: dishes,
+      //     include: dish_imgs,
+      //   },
+      // ],
+      // where: {
+      //   c_id: custID,
+      // },
+    });
+    
+    const r_id = cart.length>0?cart[0].resId: null;
+
+    const restDetails = await Restaurant.findOne({
+      _id: mongoose.Types.ObjectId(r_id),
+    });
+  
+    const cartItems = [];
+  
+    cart.forEach((ele) => {
+  
+      const temp = restDetails.dishes.filter((a) => String(a._id) === String(ele.dishId))[0];
+      // console.log(ele);
+      // console.log(temp);
+      const obj = Object.assign({},ele._doc);
+      obj.dish = temp;
+      cartItems.push(obj);
+      // console.log(obj);
+    });
+  
+    if(r_id === null){
+      return res.status(201).send({message: 'No Items in cart'}); 
+    }
+  
+    return res.status(201).json({ cartItems, restDetails });
+    }catch(err){
+      console.log(err)
+    return res.status(500).send({ error: 'Error Deleting Cart Item' });
+  }
+}
 module.exports = {
   getCartDetails,
   addItemToCart,
   resetCart,
   deleteCart,
   deleteCartItem,
+  updateCart,
 };

@@ -81,7 +81,7 @@ function ShowDishModal(props) {
       .post(
         '/cart/add',
         {
-          restId,
+          resId: restId,
           dishId: selectedDishId,
         },
         {

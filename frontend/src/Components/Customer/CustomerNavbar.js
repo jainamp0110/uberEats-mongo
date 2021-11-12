@@ -5,6 +5,7 @@ import {
   StyledNavigationItem as NavigationItem,
   StyledNavigationList as NavigationList,
 } from 'baseui/header-navigation';
+import { setCartItems } from '../../actions/cart';
 
 import { Card, StyledBody, StyledAction, StyledThumbnail } from 'baseui/card';
 import { Nav } from 'react-bootstrap';
@@ -14,7 +15,7 @@ import { useHistory } from 'react-router';
 import logo from '../../assets/images/ubereats.png';
 import cartLogo from '../../assets/images/cartIcon.jpg';
 import { Menu } from 'baseui/icon';
-import { Button, KIND } from 'baseui/button';
+import { Button, KIND, SHAPE } from 'baseui/button';
 import { Col, Form, Row } from 'react-bootstrap';
 import { Drawer, ANCHOR, SIZE } from 'baseui/drawer';
 import { Avatar } from 'baseui/avatar';
@@ -124,6 +125,30 @@ function CustomerNavbar() {
   React.useEffect(() => {
     getCartItems();
   }, [isCartOpen]);
+  const updateCartItem = (id, qty) => {
+    const token = localStorage.getItem('token');
+    const cartId = id;
+
+    axiosConfig
+      .put(
+        `/cart/${cartId}`,
+        {
+          qty,
+        },
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res.data)
+        setCartDetails(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   const deleteItemFromCart = async (id) => {
     const token = localStorage.getItem('token');
@@ -401,18 +426,18 @@ function CustomerNavbar() {
                         return (
                           <div
                             className="card mb-3"
-                            style={{ width: '100%', height: '80px' }}
+                            style={{ width: '100%', height: '150px' }}
                           >
                             <div className="row no-gutters">
                               <div className="col-md-4">
                                 <img
                                   src={
-                                    item.dish.dish_imgs.length > 0
-                                      ? item.dish.dish_imgs[0].di_img
+                                    item.dish.imageLink.length > 0
+                                      ? item.dish.imageLink[0].imageLink
                                       : null
                                   }
                                   style={{
-                                    height: '80px',
+                                    height: '70%',
                                     marginLeft: '-28px',
                                   }}
                                 />
@@ -426,19 +451,59 @@ function CustomerNavbar() {
                               <div className="col-md-5">
                                 <div className="card-body">
                                   <h5 className="card-title">
-                                    {item.dish.d_name}
+                                    {item.dish.name}
                                   </h5>
                                   <p className="card-text">
-                                    {cartDetails.restDetails.r_name}
+                                    {cartDetails.restDetails.name}
                                   </p>
                                 </div>
+                                <div className="row no-gutters">
+                                <div>
+                                  <Button
+                                    size={SIZE.mini}
+                                    disabled={item.qty === 1 ? true : false}
+                                    shape={SHAPE.circle}
+                                    style={{ marginLeft: '10px' }}
+                                    onClick={async () => {
+                                      item.qty = item.qty - 1;
+                                      await setCartDetails(cartDetails);
+                                      dispatch(setCartItems(cartDetails.cartItems));
+                                      updateCartItem(item._id, item.qty);
+                                    }}
+                                  >
+                                    -
+                                  </Button>
+                                  <span
+                                    style={{
+                                      marginLeft: '10px',
+                                      marginRight: '10px',
+                                      fontSize: '20px',
+                                    }}
+                                  >
+                                    {item.qty}
+                                  </span>
+                                  <Button
+                                    size={SIZE.mini}
+                                    shape={SHAPE.circle}
+                                    onClick={async () => {
+                                      item.qty = item.qty + 1;
+                                      await setCartDetails(cartDetails);
+                                      dispatch(setCartItems(cartDetails.cartItems));
+                                      updateCartItem(item._id, item.qty);
+                                    }}
+                                  >
+                                    +
+                                  </Button>
+                                </div>
+                              </div>
+
                               </div>
                               <div className="col-md-3">
                                 <div className="card-body">
                                   <Button
                                     style={{ backgroundColor: 'red' }}
                                     onClick={() => {
-                                      deleteItemFromCart(item.cart_id);
+                                      deleteItemFromCart(item._id);
                                     }}
                                   >
                                     Delete
@@ -454,7 +519,7 @@ function CustomerNavbar() {
               </div>
             </div>
             {cartDetails.cartItems?.length > 0 ? (
-              <div>
+              <div style={{ marginTop: '5%'}}>
                 <p>
                   <Button style={{ width: '100%' }} onClick={deleteCartItems}>
                     Clear Cart
@@ -475,15 +540,15 @@ function CustomerNavbar() {
             isOpen={orderInitModalIsOpen}
           >
             <ModalHeader>
-              <H3> {cartDetails?.restDetails?.r_name}</H3>
+              <H3> {cartDetails?.restDetails?.name}</H3>
             </ModalHeader>
             <ModalBody>
               {cartDetails?.cartItems?.length > 0
                 ? cartDetails.cartItems.map((item) => {
                     return (
                       <Row>
-                        <Col>{item?.dish?.d_name}</Col>
-                        <Col>${item?.dish?.d_price}</Col>
+                        <Col>{item?.dish?.name}      x{item?.qty}</Col>
+                        <Col>${parseFloat(item?.dish?.price)*parseInt(item?.qty)}</Col>
                         <hr />
                       </Row>
                     );

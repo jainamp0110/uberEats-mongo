@@ -6,6 +6,7 @@ const {
   resetCart,
   deleteCart,
   deleteCartItem,
+  updateCart,
 } = require('../controllers/cart');
 
 const router = express.Router();
@@ -75,5 +76,7 @@ router.post('/reset', resetCart);
  * @security JWT
  */
 router.delete('/', deleteCart);
+
+router.put('/:cartId', updateCart);
 
 module.exports = router;

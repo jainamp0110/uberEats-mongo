@@ -27,28 +27,28 @@ const engine = new Styletron();
 
 function App() {
   return (
-    <div className="App">
+    <div className='App'>
       <StyletronProvider value={engine}>
         <BaseProvider theme={LightTheme} zIndex={1500}>
           <React.Suspense fallback={<span> Loading...</span>}>
             <Toaster />
             <Router>
               <Switch>
-                <Route path="/login" component={Login} />
-                <Route path="/register" component={Register} />
-                <Route path="/restaurant/login" component={ RestaurantLogin } />
-                <Route path="/restaurant/register" component={RestaurantRegistration} />
-                <Route path="/restaurant/dashboard" component={AccessComponent(RestaurantDashboard)} />
-                <Route path="/customer/dashboard" component={AccessComponent(CustomerDashboard)} />
-                <Route path="/customer/fvrts" component={AccessComponent(CustomerFavorites)} />
-                <Route path="/customer/orders" component={AccessComponent(CustomerOrders)} />
-                <Route path="/customer/update" component={AccessComponent(UpdateCustomer)} />
-                <Route path="/customer/restaurant/:restId" component={AccessComponent(RestaurantDetails)} />
-                <Route path="/customer/placeorder/:oid" component={AccessComponent(PlaceOrder)} />
-                <Route path="/mediaUploader" component={MediaUploader} />
-                <Route path="/restaurant/orders/" component={AccessComponent(RestaurantOrders)} />   
-                <Route path="/restaurant/dishes" component={AccessComponent(RestaurantDishes)} />  
-                <Route path="/" component={Login} />
+                <Route path='/login' component={Login} />
+                <Route path='/register' component={Register} />
+                <Route path='/restaurant/login' component={ RestaurantLogin } />
+                <Route path='/restaurant/register' component={RestaurantRegistration} />
+                <Route path='/restaurant/dashboard' component={AccessComponent(RestaurantDashboard)} />
+                <Route path='/customer/dashboard' component={AccessComponent(CustomerDashboard)} />
+                <Route path='/customer/fvrts' component={AccessComponent(CustomerFavorites)} />
+                <Route path='/customer/orders' component={AccessComponent(CustomerOrders)} />
+                <Route path='/customer/update' component={AccessComponent(UpdateCustomer)} />
+                <Route path='/customer/restaurant/:restId' component={AccessComponent(RestaurantDetails)} />
+                <Route path='/customer/placeorder/:oid' component={AccessComponent(PlaceOrder)} />
+                <Route path='/mediaUploader' component={MediaUploader} />
+                <Route path='/restaurant/orders/' component={AccessComponent(RestaurantOrders)} />   
+                <Route path='/restaurant/dishes' component={AccessComponent(RestaurantDishes)} />  
+                <Route path='/' component={Login} />
               </Switch>
             </Router>
           </React.Suspense>
