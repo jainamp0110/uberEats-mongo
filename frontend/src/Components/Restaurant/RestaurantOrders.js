@@ -47,7 +47,7 @@ function RestaurantOrders() {
     axiosConfig
       .get(`/orders/filterorders`, {
         params: {
-          orderStatus,
+          status: orderStatus,
         },
         headers: {
           Authorization: token,
@@ -75,9 +75,9 @@ function RestaurantOrders() {
         console.log(res.data);
       })
       .catch((err) => {
-        if (err.response.status === 404) {
-          toast.error('NO Order Found');
-        }
+        // if (err.response.status === 404) {
+        //   toast.error('NO Order Found');
+        // }
         console.log(err);
       });
   };
@@ -85,7 +85,7 @@ function RestaurantOrders() {
   const getCustDetails = (custId) => {
     const token = localStorage.getItem('token');
     axiosConfig
-      .get(`/customers/profile/${custId}`, {
+      .get(`/customers/${custId}`, {
         headers: {
           Authorization: token,
         },
@@ -113,7 +113,7 @@ function RestaurantOrders() {
           headers: {
             Authorization: token,
           },
-        },
+        }
       )
       .then((res) => {
         getRestOrders();
@@ -157,10 +157,10 @@ function RestaurantOrders() {
               { label: 'Delivered', id: '#FAEBD7' },
               { label: 'Cancelled', id: '#FAEBD7' },
             ]}
-            valueKey="label"
-            labelKey="label"
+            valueKey='label'
+            labelKey='label'
             value={filterOrderStatus}
-            placeholder="Select Order Status"
+            placeholder='Select Order Status'
             onChange={({ value }) => {
               setFilterOrderStatus(value);
               getFilteredOrders(value);
@@ -169,7 +169,7 @@ function RestaurantOrders() {
         </div>
       </center>
       <Modal onClose={() => setModalIsOpen(false)} isOpen={modalIsOpen}>
-        <ModalHeader>{customerProfile.c_name}</ModalHeader>
+        <ModalHeader>{customerProfile.name}</ModalHeader>
         <ModalBody>
           <Card
             overrides={{ Root: { style: { width: '328px' } } }}
@@ -177,37 +177,33 @@ function RestaurantOrders() {
           >
             <StyledThumbnail
               src={
-                customerProfile?.c_profile_img
-                  ? customerProfile.c_profile_img
+                customerProfile?.imageLink
+                  ? customerProfile.imageLink
                   : 'https://ubereats-media.s3.amazonaws.com/guest-user.jpg'
               }
             />
             <StyledBody style={{ textAlign: 'left' }}>
-              <b> About: </b>
-              {customerProfile?.c_about
-                ? customerProfile?.c_about
-                : 'Not Updated'}
               <br />
               <b> City: </b>
 
-              {customerProfile?.c_city}
+              {customerProfile?.city}
               <br />
               <b> State: </b>
-              {customerProfile?.c_state}
+              {customerProfile?.state}
               <br />
               <b> Country: </b>
 
-              {customerProfile?.c_country}
+              {customerProfile?.country}
               <br />
               <b> Date Of Birth: </b>
 
               {customerProfile
-                ? new Date(customerProfile?.c_dob).toUTCString().substr(5, 11)
+                ? new Date(customerProfile?.dob).toUTCString().substr(5, 11)
                 : null}
               <br />
               <b> Nick Name: </b>
 
-              {customerProfile?.c_nick_name}
+              {customerProfile?.nickName}
               <br />
               <br />
             </StyledBody>
@@ -228,6 +224,7 @@ function RestaurantOrders() {
       >
         <div style={{ margin: '5%' }}>
           <ModalHeader>Reciept</ModalHeader>
+          <H6 style={{fontSize: '14px'}}>{orderDetails?.orderDetails?.addressId? orderDetails?.orderDetails?.addressId: ''}</H6>
           <hr />
           <ModalBody>
             <Row>
@@ -235,27 +232,22 @@ function RestaurantOrders() {
                 <H5>Total</H5>
               </Col>
               <Col xs={4}>
-                <H6> $ {orderDetails.o_final_price}</H6>
+                <H6> $ {orderDetails?.orderDetails?.finalPrice?.toFixed(2)}</H6>
               </Col>
             </Row>
-            {orderDetails?.order_dishes?.length > 0
-              ? orderDetails.order_dishes.map((dish) => {
+            {orderDetails?.orderDetails?.dishes?.length > 0
+              ? orderDetails?.orderDetails?.dishes?.map((dish,index) => {
                   return (
                     <Row>
                       <Col style={{ textAlign: 'left' }}>
-                        {dish?.dish.d_name}
+                        {orderDetails?.dishName[index]} x {dish?.qty}
                       </Col>
-                      <Col xs={4}>${dish?.dish.d_price}</Col>
+                      <Col xs={4}>${parseFloat(dish?.price)*parseFloat(dish?.qty)}</Col>
                     </Row>
                   );
                 })
               : null}
           </ModalBody>
-          <ModalFooter>
-            <ModalButton onClick={() => setOrderModalIsOpen(false)}>
-              Okay
-            </ModalButton>
-          </ModalFooter>
         </div>
       </Modal>
       <div>
@@ -264,35 +256,31 @@ function RestaurantOrders() {
             {allOrderDetails?.length > 0 ? (
               allOrderDetails.map((order, index) => (
                 <Col
-                  className="hoverPointer"
+                  className='hoverPointer'
                   xs={2}
                   key={index}
                   style={{ marginTop: '30px' }}
                 >
                   <Card style={{ height: '100%' }}>
                     <div
-                      key={order.o_id}
+                      key={order._id}
                       onClick={async () => {
-                        await getOrderDetails(order.o_id);
-                        setOrderModalIsOpen(true);
+                        await getCustDetails(order.custId);
+                        setModalIsOpen(true);
                       }}
                     >
                       <Card.Img
-                        variant="top"
-                        src={
-                          order?.customer?.c_profile_img
-                            ? order?.customer?.c_profile_img
-                            : ''
-                        }
+                        variant='top'
+                        src={order?.custImage ? order?.custImage : ''}
                         style={{ height: '200px' }}
                       />
                     </div>
                     <Card.Header>
                       <h5 style={{ fontWeight: 'bold' }}>
-                        {order?.customer?.c_name}
+                        {order?.custName ? order?.custName : ''}
                       </h5>
                     </Card.Header>
-                    <ListGroup variant="flush">
+                    <ListGroup variant='flush'>
                       <ListGroup.Item>
                         <div
                           style={{
@@ -300,14 +288,19 @@ function RestaurantOrders() {
                             justifyContent: 'space-between',
                           }}
                         >
-                          <div>{order.o_status}</div>
+                          <div>{order?.status ? order?.status : ''}</div>
                           <div>
-                            <h6>${order.o_final_price}</h6>
+                            <h6>
+                              $
+                              {order?.finalPrice
+                                ? order?.finalPrice?.toFixed(2)
+                                : ''}
+                            </h6>
                           </div>
                         </div>
                       </ListGroup.Item>
                       <ListGroup.Item>
-                        <FormControl label="Update Order Status">
+                        <FormControl label='Update Order Status'>
                           {order ? (
                             order.o_type === 'Delivery' ? (
                               <Select
@@ -317,14 +310,14 @@ function RestaurantOrders() {
                                   { orderStatus: 'On the Way' },
                                   { orderStatus: 'Delivered' },
                                 ]}
-                                valueKey="orderStatus"
-                                labelKey="orderStatus"
-                                placeholder="Select Order Status"
-                                value={[{ orderStatus: order.o_status }]}
+                                valueKey='orderStatus'
+                                labelKey='orderStatus'
+                                placeholder='Select Order Status'
+                                value={[{ orderStatus: order.status }]}
                                 onChange={({ value }) =>
                                   updateOrderStatus(
-                                    order.o_id,
-                                    value[0].orderStatus,
+                                    order._id,
+                                    value[0].orderStatus
                                   )
                                 }
                               />
@@ -336,20 +329,38 @@ function RestaurantOrders() {
                                   { orderStatus: 'Ready' },
                                   { orderStatus: 'Picked Up' },
                                 ]}
-                                valueKey="orderStatus"
-                                labelKey="orderStatus"
-                                placeholder="Select Order Status"
-                                value={[{ orderStatus: order.o_status }]}
+                                valueKey='orderStatus'
+                                labelKey='orderStatus'
+                                placeholder='Select Order Status'
+                                value={[{ orderStatus: order.status }]}
                                 onChange={({ value }) =>
                                   updateOrderStatus(
-                                    order.o_id,
-                                    value[0].orderStatus,
+                                    order._id,
+                                    value[0].orderStatus
                                   )
                                 }
                               />
                             )
                           ) : null}
                         </FormControl>
+                      </ListGroup.Item>
+                      <ListGroup.Item>
+                        <Button
+                          size={SIZE.large}
+                          $style={{
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'center',
+                          }}
+                          onClick={async () => {
+                            await getOrderDetails(order._id);
+                            setOrderModalIsOpen(true);
+                          }}
+                         >
+                          <span style={{ justifyContent: 'center' }}>
+                            View Receipt
+                          </span>
+                        </Button>
                       </ListGroup.Item>
                     </ListGroup>
                     {/* <H6>$ {ele.d_price} </H6>
@@ -380,13 +391,13 @@ function RestaurantOrders() {
                     >
                       <Col>
                         <img
-                          className="col-sm-12"
+                          className='col-sm-12'
                           src={
                             order?.customer?.c_profile_img
                               ? order?.customer.c_profile_img
                               : 'https://ubereats-media.s3.amazonaws.com/guest-user.jpg'
                           }
-                          alt="sans"
+                          alt='sans'
                           style={{ height: '100%' }}
                           onClick={async () => {
                             await getCustDetails(order?.customer?.c_id);
@@ -399,20 +410,20 @@ function RestaurantOrders() {
                         style={{ textAlign: 'left', marginLeft: '2%' }}
                       >
                         <H5>
-                          <a>{order?.customer?.c_name}</a> ({order.o_status})
+                          <a>{order?.customer?.c_name}</a> ({order.status})
                         </H5>
                         <p>
                           Total Items: {order.order_dishes?.length} <br />
-                          Total Price: ${order.o_final_price} <br />
+                          Total Price: ${order.finalPrice} <br />
                           Order Place:{' '}
                           {new Date(order.o_date_time).toUTCString()} <br />
                           Order Type: {order.o_type} <br />
                           <br />
                           <span
-                            className="hoverUnderline"
+                            className='hoverUnderline'
                             style={{ fontWeight: 'bold' }}
                             onClick={async () => {
-                              await getOrderDetails(order.o_id);
+                              await getOrderDetails(order._id);
                               setOrderModalIsOpen(true);
                             }}
                           >
@@ -422,7 +433,7 @@ function RestaurantOrders() {
                       </Col>
                       <Col style={{ marginRight: '45px' }}>
                         <div style={{ justifyContent: 'center' }}>
-                          <FormControl label="Update Order Status">
+                          <FormControl label='Update Order Status'>
                             {order ? (
                               order.o_type === 'Delivery' ? (
                                 <Select
@@ -431,9 +442,9 @@ function RestaurantOrders() {
                                     { orderStatus: 'On the Way' },
                                     { orderStatus: 'Delivered' },
                                   ]}
-                                  valueKey="orderStatus"
-                                  labelKey="orderStatus"
-                                  placeholder="Select Order Status"
+                                  valueKey='orderStatus'
+                                  labelKey='orderStatus'
+                                  placeholder='Select Order Status'
                                   value={orderStatus}
                                   onChange={({ value }) =>
                                     setOrderStatus(value)
@@ -446,9 +457,9 @@ function RestaurantOrders() {
                                     { orderStatus: 'Ready' },
                                     { orderStatus: 'Picked Up' },
                                   ]}
-                                  valueKey="orderStatus"
-                                  labelKey="orderStatus"
-                                  placeholder="Select Order Status"
+                                  valueKey='orderStatus'
+                                  labelKey='orderStatus'
+                                  placeholder='Select Order Status'
                                   value={orderStatus}
                                   onChange={({ value }) =>
                                     setOrderStatus(value)
@@ -464,7 +475,7 @@ function RestaurantOrders() {
                               display: 'flex',
                               justifyContent: 'center',
                             }}
-                            onClick={() => updateOrderStatus(order?.o_id)}
+                            onClick={() => updateOrderStatus(order?._id)}
                           >
                             <span style={{ justifyContent: 'center' }}>
                               Update Status

@@ -169,10 +169,17 @@ function CustomerOrders() {
                           </a>{' '}
                         </H5>
                         <p>
-                          {order?.dishes.length} items <br />
-                          For ${(order?.finalPrice).toFixed(2)} <br />
-                          {new Date(order?.dateTime).toUTCString()} <br />
-                          Order Type: {order?.orderType} <br />
+                          {/* {order?.dishes.length} items <br /> */}
+                          <span style={{ fontWeight: 'bold' }}>
+                            ${(order?.finalPrice).toFixed(2)} <br />
+                          </span>
+                          <span style={{ fontWeight: 'bold' }}>
+                            {new Date(order?.dateTime).toUTCString()} <br />
+                          </span>
+                          <span style={{ fontWeight: 'bold' }}>
+                            { order?.orderType} <br />
+                          </span>
+
                           <br />
                           Order status:{' '}
                           <span style={{ fontWeight: 'bold' }}>

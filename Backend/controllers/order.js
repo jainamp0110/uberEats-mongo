@@ -387,9 +387,9 @@ const getOrderById = async (req, res) => {
             item['restImage'] = '';
           }
   
-          const dishName = [];
+          // const dishName = [];
           item.dishes.forEach((dish) => {
-            const n = item.restaurant.dishes.filter((ele) => String(ele._id) === String(dish.id))[0].name;
+            const n = item.restaurant[0].dishes.filter((ele) => String(ele._id) === String(dish.id))[0].name;
             dishName.push(n);
           });
           delete item.restaurant;
