@@ -6,6 +6,11 @@ import axiosConfig from '../../axiosConfig';
 import CustomerNavbar from './CustomerNavbar';
 import { Button, SIZE } from 'baseui/button';
 import { useHistory } from 'react-router';
+import { Pagination } from 'baseui/pagination';
+import { Select } from 'baseui/select';
+
+
+
 import {
   Modal,
   ModalHeader,
@@ -15,14 +20,53 @@ import {
 } from 'baseui/modal';
 
 function CustomerOrders() {
+  const [filterOrderStatus, setFilterOrderStatus] = useState('All');
   const [allOrderDetails, setAllOrderDetails] = useState([]);
   const [orderDetails, setOrderDetails] = useState({});
   const [orderModalIsOpen, setOrderModalIsOpen] = useState(false);
+  const [pages, setPages] = useState(1);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [limit, setLimit] = useState('5');
+
   const history = useHistory();
 
-  useEffect(() => {
-    getCustOrders();
-  }, []);
+  React.useEffect(() => {
+    getFilteredOrders();
+  }, [limit, currentPage, filterOrderStatus]);
+
+  const getFilteredOrders = () => {
+    let orderStatus = filterOrderStatus ? filterOrderStatus : null;
+    const token = localStorage.getItem('token');
+
+    if (filterOrderStatus === 'All') {
+      orderStatus = null;
+    }
+    console.log('status', filterOrderStatus);
+
+    console.log('currentPage',currentPage);
+    console.log('limit',limit);
+    axiosConfig
+      .get(`/orders/filterorders`, {
+        params: {
+          page: currentPage,
+          limit,
+          orderStatus,
+        },
+        headers: {
+          Authorization: token,
+        },
+      })
+      .then((res) => {
+        console.log(res.data);
+        setAllOrderDetails(res.data.orders);
+        setPages(res.data.totalPages);
+        // setCurrentPage(res.data.currentPage);
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error('Error Fetching Filtered Records');
+      });
+  };
 
   const getOrderDetails = (oid) => {
     const token = localStorage.getItem('token');
@@ -44,22 +88,22 @@ function CustomerOrders() {
       });
   };
 
-  const getCustOrders = () => {
-    const token = localStorage.getItem('token');
-    axiosConfig
-      .get('/orders/', {
-        headers: {
-          Authorization: token,
-        },
-      })
-      .then((res) => {
-        console.log(res.data);
-        setAllOrderDetails(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
+  // const getCustOrders = () => {
+  //   const token = localStorage.getItem('token');
+  //   axiosConfig
+  //     .get('/orders/', {
+  //       headers: {
+  //         Authorization: token,
+  //       },
+  //     })
+  //     .then((res) => {
+  //       console.log(res.data);
+  //       setAllOrderDetails(res.data);
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //     });
+  // };
 
   const cancelOrder = (oid) => {
     console.log(oid);
@@ -77,7 +121,7 @@ function CustomerOrders() {
       .then((res) => {
         console.log(res.data);
         toast.success('Order cancelled!');
-        getCustOrders();
+        getFilteredOrders();
       })
       .catch((err) => {
         toast.error('Cannot cancel order!');
@@ -87,6 +131,59 @@ function CustomerOrders() {
   return (
     <div>
       <CustomerNavbar />
+      <Row style={{ height: '100px', marginTop: '3%', marginLeft: '3%', marginRight: '3%' }}>
+        <Col>
+          <center>
+            <div>
+              <Select
+                options={[
+                  { label: 'All', id: '#F0F8FF' },
+                  { label: 'Placed', id: '#F0F8FF' },
+                  { label: 'On the Way', id: '#FAEBD7' },
+                  { label: 'Picked Up', id: '#FAEBD7' },
+                  { label: 'Preparing', id: '#FAEBD7' },
+                  { label: 'Ready', id: '#FAEBD7' },
+                  { label: 'Delivered', id: '#FAEBD7' },
+                  { label: 'Cancelled', id: '#FAEBD7' },
+                ]}
+                valueKey="label"
+                labelKey="label"
+                value={[{ label: filterOrderStatus }]}
+                placeholder="Select Order Status"
+                onChange={({ value }) => {
+                  setFilterOrderStatus(value[0]?.label);
+                }}
+              />
+            </div>
+          </center>
+        </Col>
+        <Col>
+          <Pagination
+            numPages={pages}
+            currentPage={currentPage}
+            onPageChange={({ nextPage }) => {
+              setCurrentPage(Math.min(Math.max(nextPage, 1), 20));
+            }}
+          />
+        </Col>
+        <Col>
+          <Select
+            options={[
+              { label: '2', id: '#F0F8FF' },
+              { label: '5', id: '#FAEBD7' },
+              { label: '10', id: '#00FFFF' },
+            ]}
+            value={[{ label: limit }]}
+            placeholder="Select Page Limit"
+            onChange={({ value }) => {
+              setLimit(value[0].label);
+              setCurrentPage(1);
+              getFilteredOrders();
+            }}
+          />
+        </Col>
+      </Row>
+
       <Modal
         onClose={() => setOrderModalIsOpen(false)}
         isOpen={orderModalIsOpen}

@@ -170,7 +170,7 @@ const updateOrder = async (req, res) => {
 
 const filterOrders = async (req, res) => {
   const { role, id } = req.headers;
-  const { page = 1, limit = 5, status } = req.query;
+  const { page = 1, limit = 5, orderStatus } = req.query;
 
   let orders;
 
@@ -185,7 +185,7 @@ const filterOrders = async (req, res) => {
   if (role === 'customer') {
     const prms = {
       custId: mongoose.Types.ObjectId(String(id)),
-      status: status,
+      status: orderStatus,
     };
 
     checkProperties(prms);
@@ -205,7 +205,7 @@ const filterOrders = async (req, res) => {
         $match: prms,
       },
       {
-        $sort: { createdAt: -1 },
+        $sort: { 'dateTime': -1 },
       },
       {
         $skip: (page - 1) * limit,
@@ -229,12 +229,12 @@ const filterOrders = async (req, res) => {
       .status(200)
       .send({
         orders: orders,
-        totalDocs: count,
-        totalPages: Math.ceil(count / limit),
+        totalDocs: cnt,
+        totalPages: Math.ceil(cnt / limit),
         currentPage: page,
       });
   } else {
-    const prms = { resId: mongoose.Types.ObjectId(String(id)), status: status };
+    const prms = { resId: mongoose.Types.ObjectId(String(id)), status: orderStatus };
 
     checkProperties(prms);
     const cOrd = await Order.find(prms);
@@ -253,7 +253,7 @@ const filterOrders = async (req, res) => {
         $match: prms,
       },
       {
-        $sort: { createdAt: -1 },
+        $sort: { 'dateTime': -1 },
       },
       {
         $skip: (page - 1) * limit,

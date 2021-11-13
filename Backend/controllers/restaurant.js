@@ -213,22 +213,19 @@ const getRestaurantDetails = async (req, res) => {
 const getRestaurantBySearch = async (req, res) => {
   const { keyWord } = req.query;
   const custId = req.headers.id;
-  if(!custId){
-    return res.status(403).send({error: 'login Again!!'});
-  } 
+  if (!custId) {
+    return res.status(403).send({ error: 'login Again!!' });
+  }
 
-  const data = await Restaurant.find({
-    $or: [{
-      name: keyWord,
-      description: keyWord,
-      'dishes.name': keyWord,
-    }],
+  const restaurants = await Restaurant.find({
+    $or: [
+      { 'name' : { '$regex' : keyWord, '$options' : 'i' } },
+      { 'description' : { '$regex' : keyWord, '$options' : 'i' } },
+      { 'dishes.name' : { '$regex' : keyWord, '$options' : 'i' } },
+    ],
   });
-  // const [data, meta] = await sequelize.query(
-  //   `select restaurants.*, restaurant_imgs.* from restaurants join restaurant_imgs on restaurants.r_id = restaurant_imgs.r_id join dishes on restaurants.r_id=dishes.r_id WHERE restaurants.r_name like '%${keyWord}%' or restaurants.r_desc like '%${keyWord}%' or dishes.d_name like '%${keyWord}%' `
 
-  //   );
-  return res.status(200).send(data);
+  return res.status(200).send(restaurants);
 };
 
 const getAllRestaurants = async (req, res) => {

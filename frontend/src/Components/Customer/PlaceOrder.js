@@ -130,13 +130,13 @@ function PlaceOrder({ match }) {
       .then((res) => {
         console.log('Order Dera', res.data);
         const delOpt = [];
-        if (res.data.deliveryType === 'Both') {
+        if (res.data.orderDetails.deliveryType === 'Both') {
           delOpt.push({ deliveryType: 'Pickup' });
           delOpt.push({ deliveryType: 'Delivery' });
           setDelTypeOptions(delOpt);
         } else {
-          delOpt.push({ deliveryType: res?.data?.deliveryType });
-          setDelTypeOptions({ deliveryType: delOpt });
+          delOpt.push({ deliveryType: res?.data?.orderDetails?.deliveryType });
+          setDelTypeOptions(delOpt);
         }
         setOrderDetails(res.data);
       })
@@ -365,12 +365,12 @@ function PlaceOrder({ match }) {
             </Col>
             <Col style={{ textAlign: 'right' }}>
               {orderDetails ? (
-                <h6>
-                  {parseFloat(orderDetails?.finalPrice) -
-                    parseFloat(orderDetails?.tax)}
+                <h6>$
+                  {parseFloat(orderDetails?.orderDetails?.finalPrice) -
+                    parseFloat(orderDetails?.orderDetails?.tax)}
                 </h6>
               ) : null}
-              {orderDetails ? <h6> {orderDetails?.tax?.toFixed(2)}</h6> : null}
+              {orderDetails ? <h6> ${orderDetails?.orderDetails?.tax?.toFixed(2)}</h6> : null}
               <h6> $0</h6>
             </Col>
           </Row>
@@ -381,7 +381,7 @@ function PlaceOrder({ match }) {
             </Col>
             <Col style={{ textAlign: 'right' }}>
               {orderDetails ? (
-                <h6> {orderDetails?.finalPrice?.toFixed(2)}</h6>
+                <h6> ${orderDetails?.orderDetails?.finalPrice?.toFixed(2)}</h6>
               ) : null}
             </Col>
           </Row>
