@@ -5,7 +5,6 @@ const {
   deleteCustomer,
   getCustomerProfile,
   getCustomerById,
-  getAllCustomers,
   addAddress,
   getAllAddress,
   getAllFavorites,
@@ -154,9 +153,5 @@ router.post('/fvrts', addToFavorites);
 router.delete('/fvrts/:rid', deleteFromFavorites);
 
 router.get('/:cid', getCustomerById);
-
-router.get('/', getAllCustomers);
-
-router.get('/myprofile', getCustomerProfile);
 
 module.exports = router;

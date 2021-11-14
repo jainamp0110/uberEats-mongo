@@ -3,13 +3,6 @@
 
 const mongoose = require('mongoose');
 
-const {
-  dishes,
-  dish_imgs,
-  sequelize,
-  restaurants,
-} = require("../models/data.model");
-
 const Restaurant = require('../models/restaurant.models');
 
 const createDish = async (req, res) => {
@@ -142,26 +135,6 @@ const insertDishImage = async (req, res) => {
   return res.status(201).send({ message: "Dish image Added" });
 };
 
-const deleteDishImage = async (req, res) => {
-  const restId = req.headers.id;
-  const dishImageId = req.params.imgId;
-
-  const existDishImage = await dish_imgs.findOne({
-    where: {
-      di_id: dishImageId,
-    },
-  });
-
-  if (!existDishImage) return res.status(404).send("Dish Does not exist!!");
-
-  await dish_imgs.destroy({
-    where: {
-      di_id: dishImageId,
-    },
-  });
-  return res.status(201).send({ message: "Dish image Deleted" });
-};
-
 module.exports = {
   createDish,
   updateDish,
@@ -169,5 +142,4 @@ module.exports = {
   getDishById,
   getAllDishes,
   insertDishImage,
-  deleteDishImage,
 };

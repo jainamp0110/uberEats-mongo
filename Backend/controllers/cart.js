@@ -1,14 +1,6 @@
 // const { body, validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 
-const {
-  carts,
-  dishes,
-  sequelize,
-  restaurants,
-  dish_imgs,
-} = require('../models/data.model');
-
 const Restaurant = require('../models/restaurant.models');
 const Cart = require('../models/cart.models');
 

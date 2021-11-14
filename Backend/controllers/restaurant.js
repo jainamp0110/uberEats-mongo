@@ -5,58 +5,28 @@ const bcrypt = require('bcryptjs');
 const _ = require('underscore');
 const mongoose = require('mongoose');
 
-const {
-  restaurants,
-  restaurant_dishtypes,
-  dish_imgs,
-  dishes,
-  sequelize,
-  restaurant_imgs,
-} = require('../models/data.model');
+const { make_request } = require('../kafka/client');
 
 // const { body, validationResult } = require('express-validator');
 
 const createRestaurant = async (req, res) => {
-  try {
-    // Validate user input
-    if (!(req.body.name && req.body.email && req.body.password)) {
-      res.status(400).send({ error: 'All input is required' });
+  make_request('restaurant.create', req.body, (error, response) => {
+    if (error || !response) {
+      if ('errorStatus' in error) {
+        return res.status(error.errorStatus).json({ error: error.error });
+      }
+      return res.status(500).json({ error: error.message });
     }
-    const oldRes = await Restaurant.findOne({
-      email: req.body.email,
-    });
-
-    if (oldRes) {
-      res.status(409).send({ error: 'Restaurant Already Exist. Please Login' });
-    } else {
-      
-      req.body.password = await bcrypt.hash(req.body.password, 10);
-      const newRestaurant = new Restaurant(req.body);
-
-      const newR = await newRestaurant.save();
-      console.log(newR);
-      const token = jwt.sign(
-          { id: newR._id, email: newR.email, role: 'restaurant' },
-          'UberEats',
-          {
-            expiresIn: '2h',
-          }
-        );
-        res.status(201).json({ token });
-    }
-  } catch (err) {
-    console.log(err);
-    res.status(404).send(err);
-  }
+    return res.status(201).json({ ...response });
+  });
 };
 
 const restaurantLogin = async (req, res) => {
-
-  if (!(req.body.email && req.body.password)) 
+  if (!(req.body.email && req.body.password))
     res.status(400).send('All input is required');
 
   const rest = await Restaurant.findOne({
-      email: req.body.email,
+    email: req.body.email,
   }).select('password');
   // console.log(rest);
   if (!rest) {
@@ -72,11 +42,11 @@ const restaurantLogin = async (req, res) => {
         // Create token
         console.log(rest);
         const token = jwt.sign(
-          { id: rest._id, email:req.body.email, role: 'restaurant' },
+          { id: rest._id, email: req.body.email, role: 'restaurant' },
           'UberEats',
           {
             expiresIn: '2h',
-          }
+          },
         );
         console.log(token);
         rest.token = token;
@@ -93,7 +63,7 @@ const updateRestaurant = async (req, res) => {
   try {
     // console.log('entered',req.params.rid);
     const rest = await Restaurant.findOne({
-        _id: mongoose.Types.ObjectId(String(req.params.rid)),
+      _id: mongoose.Types.ObjectId(String(req.params.rid)),
     });
 
     // console.log(rest);
@@ -101,7 +71,7 @@ const updateRestaurant = async (req, res) => {
 
     if (req.body.email && req.body.email !== rest.email) {
       const checkRest = await Restaurant.findOne({
-          email: req.body.email,
+        email: req.body.email,
       });
 
       if (checkRest) {
@@ -126,23 +96,23 @@ const updateRestaurant = async (req, res) => {
           _id: mongoose.Types.ObjectId(String(req.params.rid)),
         },
         {
-          $set: {type: []},
+          $set: { type: [] },
         },
       );
-      
+
       await Restaurant.findOneAndUpdate(
         {
           _id: mongoose.Types.ObjectId(String(req.params.rid)),
         },
         {
-          $set: {type: req.body.type},
+          $set: { type: req.body.type },
         },
       );
     }
 
     return res.status(200).send({ message: 'Restaurant Updated' });
   } catch (err) {
-    console.log(err)
+    console.log(err);
     return res.status(500).send(err);
   }
 };
@@ -150,15 +120,15 @@ const updateRestaurant = async (req, res) => {
 const deleteRestaurant = async (req, res) => {
   try {
     const findEntry = await Restaurant.findOne({
-        _id: mongoose.Types.ObjectId(String(req.params.rid)),
+      _id: mongoose.Types.ObjectId(String(req.params.rid)),
     });
     if (!findEntry) {
       res.status(404).send('Restaurant Does not Exist to delete');
     } else {
       await Restaurant.findOneAndDelete({
-          _id: mongoose.Types.ObjectId(String(req.params.rid)),
+        _id: mongoose.Types.ObjectId(String(req.params.rid)),
       });
-      res.status(201).send({message: 'Restaurant Deleted'});
+      res.status(201).send({ message: 'Restaurant Deleted' });
     }
   } catch (err) {
     res.status(404).send(err);
@@ -172,32 +142,34 @@ const addRestaurantImage = async (req, res) => {
         _id: mongoose.Types.ObjectId(req.headers.id),
       },
       {
-        $push: {imageLink: req.body},
+        $push: { imageLink: req.body },
       },
     );
-    return res.status(201).send({message: 'Images added successfully'});
+    return res.status(201).send({ message: 'Images added successfully' });
   } else {
     return res.status(500).send({ message: 'Could not add Image' });
   }
 };
 
 const deleteRestaurantImage = async (req, res) => {
-  if(!req.params.imgId){
-    return res.status(404).send({message: 'Image does not exist'});
+  if (!req.params.imgId) {
+    return res.status(404).send({ message: 'Image does not exist' });
   }
 
-  try{
+  try {
     await Restaurant.findOneAndUpdate(
       {
         _id: mongoose.Types.ObjectId(req.headers.id),
       },
       {
-        $pull: {imageLink: {_id: mongoose.Types.ObjectId(req.params.imgId)}},
+        $pull: {
+          imageLink: { _id: mongoose.Types.ObjectId(req.params.imgId) },
+        },
       },
     );
-    return res.status(200).send({message: 'Image removed successfully'});
-  }catch(error){
-    return res.status(500).send({message: 'Internal Server Error'});
+    return res.status(200).send({ message: 'Image removed successfully' });
+  } catch (error) {
+    return res.status(500).send({ message: 'Internal Server Error' });
   }
 };
 
@@ -219,9 +191,9 @@ const getRestaurantBySearch = async (req, res) => {
 
   const restaurants = await Restaurant.find({
     $or: [
-      { 'name' : { '$regex' : keyWord, '$options' : 'i' } },
-      { 'description' : { '$regex' : keyWord, '$options' : 'i' } },
-      { 'dishes.name' : { '$regex' : keyWord, '$options' : 'i' } },
+      { name: { $regex: keyWord, $options: 'i' } },
+      { description: { $regex: keyWord, $options: 'i' } },
+      { 'dishes.name': { $regex: keyWord, $options: 'i' } },
     ],
   });
 

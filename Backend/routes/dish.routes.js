@@ -1,5 +1,5 @@
 const express = require('express');
-const { createDish, updateDish, deleteDish, getDishById, getAllDishes, insertDishImage, deleteDishImage } = require('../controllers/dish');
+const { createDish, updateDish, deleteDish, getDishById, getAllDishes, insertDishImage } = require('../controllers/dish');
 const { dishDetailsValidator, validator } = require('../controllers/validator');
 
 const router = express.Router();
@@ -70,8 +70,6 @@ router.get('/:did', getDishById);
 
 router.post('/images/:did', insertDishImage);
 
-
-router.delete('/images/:imgId', deleteDishImage);
 
 /**
  * @route GET /dishes/

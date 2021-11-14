@@ -212,6 +212,19 @@ function CustomerOrders() {
                   );
                 })
               : null}
+              <Row>
+                <Col style={{ textAlign: 'left' }}>
+                  Tax
+                </Col>
+                <Col xs={4}>${orderDetails?.orderDetails?.tax?.toFixed(2)}</Col>
+              </Row>
+              <hr />
+              <Row>
+              <Col style={{ textAlign: 'left' }}>
+                <H6>Notes:</H6>
+                <p style={{fontSize: 'large'}}>{orderDetails?.orderDetails?.notes}</p>
+              </Col>
+            </Row>
           </ModalBody>
           <ModalFooter>
             <ModalButton onClick={() => setOrderModalIsOpen(false)}>

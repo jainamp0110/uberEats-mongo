@@ -3,18 +3,6 @@
 /* eslint-disable consistent-return */
 
 const { mongo, Mongoose } = require('mongoose');
-const {
-  orders,
-  carts,
-  dishes,
-  order_dishes,
-  sequelize,
-  dish_imgs,
-  restaurants,
-  restaurant_imgs,
-  customers,
-  restaurant_dishtypes,
-} = require('../models/data.model');
 
 const mongoose = require('mongoose');
 
@@ -23,6 +11,7 @@ const Order = require('../models/order.models');
 const Restaurant = require('../models/restaurant.models');
 const Customer = require('../models/customer.models');
 const { count } = require('../models/cart.models');
+const { make_request } = require('../kafka/client');
 
 const createOrder = async (req, res) => {
   //const custId = req.headers.id;
@@ -98,33 +87,19 @@ const createOrder = async (req, res) => {
 };
 
 const placeOrder = async (req, res) => {
-  try {
-    const updObj = {
-      status: 'Placed',
-      orderType: req.body.orderType,
-      addressId: req.body.addressId,
-      dateTime: new Date().toString(),
-    };
-    if(req.body.notes){
-      updObj.notes = req.body.notes;
-    }
-
-    const updateOrder = await Order.findOneAndUpdate(
-      {
-        _id: mongoose.Types.ObjectId(req.params.id),
-      },
-      {
-        $set: updObj,
+  make_request(
+    'order.place',
+    { ...req.params, body: req.body },
+    (error, response) => {
+      if (error || !response) {
+        if ('errorStatus' in error) {
+          return res.status(error.errorStatus).json({ error: error.error });
+        }
+        return res.status(500).json({ error: error.message });
       }
-    );
-
-    if (!updateOrder) {
-      return res.status(404).send('Order Not found');
-    }
-    return res.status(201).send('Order Placed');
-  } catch (err) {
-    return res.status(400).send(err);
-  }
+      return res.status(200).json({ rest: { ...response } });
+    },
+  );
 };
 
 const updateOrder = async (req, res) => {
@@ -134,7 +109,7 @@ const updateOrder = async (req, res) => {
   const o = await Order.findOne({
     _id: mongoose.Types.ObjectId(String(oid)),
   });
-  
+
   if (
     req.headers.role === 'customer' &&
     status === 'Cancelled' &&
@@ -154,7 +129,7 @@ const updateOrder = async (req, res) => {
       },
       {
         new: true,
-      }
+      },
     );
 
     if (!updateStatus) {
@@ -205,7 +180,7 @@ const filterOrders = async (req, res) => {
         $match: prms,
       },
       {
-        $sort: { 'dateTime': -1 },
+        $sort: { dateTime: -1 },
       },
       {
         $skip: (page - 1) * limit,
@@ -225,16 +200,17 @@ const filterOrders = async (req, res) => {
       delete item.Restaurant;
     });
 
-    return res
-      .status(200)
-      .send({
-        orders: orders,
-        totalDocs: cnt,
-        totalPages: Math.ceil(cnt / limit),
-        currentPage: page,
-      });
+    return res.status(200).send({
+      orders: orders,
+      totalDocs: cnt,
+      totalPages: Math.ceil(cnt / limit),
+      currentPage: page,
+    });
   } else {
-    const prms = { resId: mongoose.Types.ObjectId(String(id)), status: orderStatus };
+    const prms = {
+      resId: mongoose.Types.ObjectId(String(id)),
+      status: orderStatus,
+    };
 
     checkProperties(prms);
     const cOrd = await Order.find(prms);
@@ -253,7 +229,7 @@ const filterOrders = async (req, res) => {
         $match: prms,
       },
       {
-        $sort: { 'dateTime': -1 },
+        $sort: { dateTime: -1 },
       },
       {
         $skip: (page - 1) * limit,
@@ -270,14 +246,12 @@ const filterOrders = async (req, res) => {
       delete item.Customer;
     });
 
-    return res
-      .status(200)
-      .send({
-        orders: orders,
-        totalDocs: count,
-        totalPages: Math.ceil(count / limit),
-        currentPage: page,
-      });
+    return res.status(200).send({
+      orders: orders,
+      totalDocs: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+    });
   }
 };
 
@@ -297,8 +271,11 @@ const getOrders = async (req, res) => {
         },
       },
       {
-        $match: {custId: mongoose.Types.ObjectId(String(id))},
+        $match: { custId: mongoose.Types.ObjectId(String(id)) },
       },
+      {
+        $sort: { dateTime: -1}
+      }
     ]);
 
     orders.forEach((item) => {
@@ -311,9 +288,7 @@ const getOrders = async (req, res) => {
       delete item.Restaurant;
     });
 
-    return res
-      .status(200)
-      .send(orders);
+    return res.status(200).send(orders);
   } else {
     orders = await Order.aggregate([
       {
@@ -325,8 +300,11 @@ const getOrders = async (req, res) => {
         },
       },
       {
-        $match: {resId: mongoose.Types.ObjectId(String(id))},
+        $match: { resId: mongoose.Types.ObjectId(String(id)) },
       },
+      {
+        $sort: { dateTime: -1}
+      }
     ]);
 
     orders.forEach((item) => {
@@ -336,22 +314,20 @@ const getOrders = async (req, res) => {
       delete item.Customer;
     });
 
-    return res
-      .status(200)
-      .send(orders);
+    return res.status(200).send(orders);
   }
 };
 
 const getOrderById = async (req, res) => {
   console.log('bruhehehehe2222');
 
-  const {role, id} = req.headers;
-  const {oid} = req.params;
+  const { role, id } = req.headers;
+  const { oid } = req.params;
 
   let orderDetails = {};
   let dishName = [];
 
-  try{
+  try {
     if (role === 'restaurant') {
       orderDetails = await Order.aggregate([
         {
@@ -377,7 +353,7 @@ const getOrderById = async (req, res) => {
           },
         },
       ]);
-      if(orderDetails){
+      if (orderDetails) {
         orderDetails.forEach((item) => {
           item['custName'] = item.customer[0].name;
           item['deliveryType'] = item.restaurant[0].deliveryType;
@@ -386,19 +362,23 @@ const getOrderById = async (req, res) => {
           } else {
             item['restImage'] = '';
           }
-  
+
           // const dishName = [];
           item.dishes.forEach((dish) => {
-            const n = item.restaurant[0].dishes.filter((ele) => String(ele._id) === String(dish.id))[0].name;
+            const n = item.restaurant[0].dishes.filter(
+              (ele) => String(ele._id) === String(dish.id),
+            )[0].name;
             dishName.push(n);
           });
           delete item.restaurant;
           delete item.customer;
         });
-        return res.status(200).send({orderDetails: orderDetails[0], dishName});
+        return res
+          .status(200)
+          .send({ orderDetails: orderDetails[0], dishName });
       }
-      return res.status(404).send({error: 'Restaurant Order Not found'});
-    }else{
+      return res.status(404).send({ error: 'Restaurant Order Not found' });
+    } else {
       orderDetails = await Order.aggregate([
         {
           $lookup: {
@@ -415,7 +395,7 @@ const getOrderById = async (req, res) => {
           },
         },
       ]);
-      if(orderDetails){
+      if (orderDetails) {
         orderDetails.forEach((item) => {
           item['name'] = item.restaurant[0].name;
           item['deliveryType'] = item.restaurant[0].deliveryType;
@@ -426,20 +406,23 @@ const getOrderById = async (req, res) => {
           }
           console.log(item);
           item.dishes.forEach((dish) => {
-            const n = item.restaurant[0].dishes.filter((ele) => String(ele._id) === String(dish.id))[0].name;
+            const n = item.restaurant[0].dishes.filter(
+              (ele) => String(ele._id) === String(dish.id),
+            )[0].name;
             dishName.push(n);
           });
           delete item.restaurant;
         });
-        return res.status(200).send({orderDetails: orderDetails[0], dishName});
+        return res
+          .status(200)
+          .send({ orderDetails: orderDetails[0], dishName });
       }
-      return res.status(404).send({error: 'Customer Order Not found'});
+      return res.status(404).send({ error: 'Customer Order Not found' });
     }
-  }catch(err){
+  } catch (err) {
     console.log(err);
-    return res.status(500).send({error: err});
+    return res.status(500).send({ error: err });
   }
-
 };
 
 module.exports = {

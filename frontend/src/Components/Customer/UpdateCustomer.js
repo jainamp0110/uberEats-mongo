@@ -55,7 +55,7 @@ function UpdateCustomer() {
     }
 
     axiosConfig
-      .get('/customers/myprofile', {
+      .get(`/customers/${tokenData.id}`, {
         headers: {
           Authorization: token,
         },
@@ -148,7 +148,7 @@ function UpdateCustomer() {
     };
 
     checkProperties(custObj);
-    
+
     const token = localStorage.getItem('token');
     axiosConfig
       .put(`/customers/${custId}`, custObj, {
@@ -180,10 +180,15 @@ function UpdateCustomer() {
         <Row style={{ width: '80%' }}>
           <Col>
             <Row>
-              <img src={image} alt='Upload your profile picture' />
+              <img src={image} alt="Upload your profile picture" />
             </Row>
             <Row>
-              <Button onClick={() => setModalIsOpen(true)} style={{ marginTop : '20px' }}>Upload Image</Button>
+              <Button
+                onClick={() => setModalIsOpen(true)}
+                style={{ marginTop: '20px' }}
+              >
+                Upload Image
+              </Button>
               <Modal isOpen={modalIsOpen}>
                 <ModalHeader>Upload Image Here</ModalHeader>
                 <ModalBody>
@@ -198,7 +203,7 @@ function UpdateCustomer() {
                 </ModalBody>
                 <ModalFooter>
                   <ModalButton
-                    kind='tertiary'
+                    kind="tertiary"
                     onClick={() => setModalIsOpen(false)}
                   >
                     Close
@@ -210,34 +215,34 @@ function UpdateCustomer() {
           <Col>
             <form onSubmit={updateCustDetails}>
               <div style={{ textAlign: 'left', width: '80%' }}>
-                <FormControl label='Name'>
+                <FormControl label="Name">
                   <Input
-                    id='name'
-                    autoComplete='off'
-                    placeholder='Enter Name'
+                    id="name"
+                    autoComplete="off"
+                    placeholder="Enter Name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
                 </FormControl>
-                <FormControl label='Email'>
+                <FormControl label="Email">
                   <Input
-                    id='email'
-                    autoComplete='off'
-                    placeholder='Enter Email'
+                    id="email"
+                    autoComplete="off"
+                    placeholder="Enter Email"
                     value={email}
                     disabled
                   />
                 </FormControl>
-                <FormControl label='About'>
+                <FormControl label="About">
                   <Input
-                    id='about'
-                    autoComplete='off'
-                    placeholder='Enter about'
+                    id="about"
+                    autoComplete="off"
+                    placeholder="Enter about"
                     value={about}
                     onChange={(e) => setAbout(e.target.value)}
                   />
                 </FormControl>
-                <FormControl label='Date of birth'>
+                <FormControl label="Date of birth">
                   <DatePicker
                     maxDate={new Date('2010-01-01T07:00:00.000Z')}
                     minDate={new Date('1960-01-01T07:00:00.000Z')}
@@ -247,35 +252,36 @@ function UpdateCustomer() {
                     }
                   />
                 </FormControl>
-                <FormControl label='Nick Name'>
+                <FormControl label="Nick Name">
                   <Input
-                    id='nickName'
-                    autoComplete='off'
-                    placeholder='Enter Nick Name'
+                    id="nickName"
+                    autoComplete="off"
+                    placeholder="Enter Nick Name"
                     value={nickName}
                     onChange={(e) => setNickName(e.target.value)}
                   />
                 </FormControl>
 
-                <FormControl label='Phone Number'>
+                <FormControl label="Phone Number">
                   <MaskedInput
-                    placeholder='Phone number'
-                    mask='(999) 999-9999'
+                    placeholder="Phone number"
+                    mask="(999) 999-9999"
                     value={contactNo}
                     onChange={(e) => setContactNo(e.target.value)}
                   />
                 </FormControl>
-                <FormControl label='City'>
+                <FormControl label="City">
                   <Select
                     options={[
                       { city: 'San Jose' },
                       { city: 'San Francisco' },
                       { city: 'New York' },
                       { city: 'Santa Clara' },
+                      { city: 'Dublin' },
                     ]}
-                    valueKey='city'
-                    labelKey='city'
-                    placeholder='Select City'
+                    valueKey="city"
+                    labelKey="city"
+                    placeholder="Select City"
                     value={city}
                     onChange={({ value }) => setCity(value)}
                   />
@@ -289,26 +295,26 @@ function UpdateCustomer() {
                     onChange={(e) => setCity(e.target.value)}
                   />
                 </FormControl> */}
-                <FormControl label='State'>
+                <FormControl label="State">
                   <Input
-                    id='state'
-                    autoComplete='off'
-                    placeholder='Enter state'
+                    id="state"
+                    autoComplete="off"
+                    placeholder="Enter state"
                     value={stateName}
                     onChange={(e) => setStateName(e.target.value)}
                   />
                 </FormControl>
-                <FormControl label='Country'>
+                <FormControl label="Country">
                   <Input
-                    id='country'
-                    autoComplete='off'
-                    placeholder='Enter country'
+                    id="country"
+                    autoComplete="off"
+                    placeholder="Enter country"
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
                   />
                 </FormControl>
                 <div style={{ textAlign: 'right' }}>
-                  <Button style={{ width: '100%' }} type='submit'>
+                  <Button style={{ width: '100%' }} type="submit">
                     {isUpdatingUser ? 'Updating Details' : 'Update Details'}
                   </Button>
                 </div>

@@ -8,10 +8,6 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
-const { sequelize } = require('./models/data.model');
-
-sequelize.sync();
-
 const authRouter = require('./routes/auth.routes');
 const { validateToken } = require('./config/validateToken');
 const restaurant = require('./routes/restaurant.routes');
@@ -19,11 +15,12 @@ const dishes = require('./routes/dish.routes');
 const customers = require('./routes/customer.routes');
 const cart = require('./routes/cart.routes');
 const orders = require('./routes/orders.routes');
-const accessControl = require('./controllers/accessController');
+// const accessControl = require('./controllers/accessController');
 
 const expressSwagger = require('express-swagger-generator')(app);
 
 const mongoose = require('mongoose');
+const { createKafkaTopics } = require('./kafka/topics');
 
 const options = {
   swaggerDefinition: {
@@ -68,6 +65,8 @@ const impFunc = async () => {
         autoIndex: true,
       }
     );
+
+    await createKafkaTopics();
 
     const PORT = 8080;
 

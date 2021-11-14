@@ -113,7 +113,7 @@ function RestaurantOrders() {
           headers: {
             Authorization: token,
           },
-        }
+        },
       )
       .then((res) => {
         getRestOrders();
@@ -157,10 +157,10 @@ function RestaurantOrders() {
               { label: 'Delivered', id: '#FAEBD7' },
               { label: 'Cancelled', id: '#FAEBD7' },
             ]}
-            valueKey='label'
-            labelKey='label'
+            valueKey="label"
+            labelKey="label"
             value={filterOrderStatus}
-            placeholder='Select Order Status'
+            placeholder="Select Order Status"
             onChange={({ value }) => {
               setFilterOrderStatus(value);
               getFilteredOrders(value);
@@ -224,7 +224,16 @@ function RestaurantOrders() {
       >
         <div style={{ margin: '5%' }}>
           <ModalHeader>Reciept</ModalHeader>
-          <H6 style={{fontSize: '14px'}}>{orderDetails?.orderDetails?.addressId? orderDetails?.orderDetails?.addressId: ''}</H6>
+          <H6 style={{ fontSize: '14px' }}>
+            {orderDetails?.orderDetails?.addressId
+              ? orderDetails?.orderDetails?.addressId
+              : ''}
+          </H6>
+          <H6 style={{ fontSize: '14px' }}>
+            {orderDetails?.orderDetails?.dateTime
+              ? new Date(orderDetails?.orderDetails?.dateTime)?.toUTCString()
+              : ''}
+          </H6>
           <hr />
           <ModalBody>
             <Row>
@@ -236,17 +245,35 @@ function RestaurantOrders() {
               </Col>
             </Row>
             {orderDetails?.orderDetails?.dishes?.length > 0
-              ? orderDetails?.orderDetails?.dishes?.map((dish,index) => {
+              ? orderDetails?.orderDetails?.dishes?.map((dish, index) => {
                   return (
                     <Row>
                       <Col style={{ textAlign: 'left' }}>
                         {orderDetails?.dishName[index]} x {dish?.qty}
                       </Col>
-                      <Col xs={4}>${parseFloat(dish?.price)*parseFloat(dish?.qty)}</Col>
+                      <Col xs={4}>
+                        $
+                        {(
+                          parseFloat(dish?.price) * parseFloat(dish?.qty)
+                        )?.toFixed(2)}
+                      </Col>
                     </Row>
                   );
                 })
               : null}
+            <Row>
+              <Col style={{ textAlign: 'left' }}>Tax</Col>
+              <Col xs={4}>${orderDetails?.orderDetails?.tax?.toFixed(2)}</Col>
+            </Row>
+            <hr />
+            <Row>
+              <Col style={{ textAlign: 'left' }}>
+                <H6>Notes:</H6>
+                <p style={{ fontSize: 'large' }}>
+                  {orderDetails?.orderDetails?.notes}
+                </p>
+              </Col>
+            </Row>
           </ModalBody>
         </div>
       </Modal>
@@ -256,7 +283,7 @@ function RestaurantOrders() {
             {allOrderDetails?.length > 0 ? (
               allOrderDetails.map((order, index) => (
                 <Col
-                  className='hoverPointer'
+                  className="hoverPointer"
                   xs={2}
                   key={index}
                   style={{ marginTop: '30px' }}
@@ -270,7 +297,7 @@ function RestaurantOrders() {
                       }}
                     >
                       <Card.Img
-                        variant='top'
+                        variant="top"
                         src={order?.custImage ? order?.custImage : ''}
                         style={{ height: '200px' }}
                       />
@@ -280,7 +307,7 @@ function RestaurantOrders() {
                         {order?.custName ? order?.custName : ''}
                       </h5>
                     </Card.Header>
-                    <ListGroup variant='flush'>
+                    <ListGroup variant="flush">
                       <ListGroup.Item>
                         <div
                           style={{
@@ -300,7 +327,7 @@ function RestaurantOrders() {
                         </div>
                       </ListGroup.Item>
                       <ListGroup.Item>
-                        <FormControl label='Update Order Status'>
+                        <FormControl label="Update Order Status">
                           {order ? (
                             order.o_type === 'Delivery' ? (
                               <Select
@@ -309,15 +336,16 @@ function RestaurantOrders() {
                                   { orderStatus: 'Preparing' },
                                   { orderStatus: 'On the Way' },
                                   { orderStatus: 'Delivered' },
+                                  { orderStatus: 'Cancelled' },
                                 ]}
-                                valueKey='orderStatus'
-                                labelKey='orderStatus'
-                                placeholder='Select Order Status'
+                                valueKey="orderStatus"
+                                labelKey="orderStatus"
+                                placeholder="Select Order Status"
                                 value={[{ orderStatus: order.status }]}
                                 onChange={({ value }) =>
                                   updateOrderStatus(
                                     order._id,
-                                    value[0].orderStatus
+                                    value[0].orderStatus,
                                   )
                                 }
                               />
@@ -328,15 +356,16 @@ function RestaurantOrders() {
                                   { orderStatus: 'Preparing' },
                                   { orderStatus: 'Ready' },
                                   { orderStatus: 'Picked Up' },
+                                  { orderStatus: 'Cancelled' },
                                 ]}
-                                valueKey='orderStatus'
-                                labelKey='orderStatus'
-                                placeholder='Select Order Status'
+                                valueKey="orderStatus"
+                                labelKey="orderStatus"
+                                placeholder="Select Order Status"
                                 value={[{ orderStatus: order.status }]}
                                 onChange={({ value }) =>
                                   updateOrderStatus(
                                     order._id,
-                                    value[0].orderStatus
+                                    value[0].orderStatus,
                                   )
                                 }
                               />
@@ -356,7 +385,7 @@ function RestaurantOrders() {
                             await getOrderDetails(order._id);
                             setOrderModalIsOpen(true);
                           }}
-                         >
+                        >
                           <span style={{ justifyContent: 'center' }}>
                             View Receipt
                           </span>

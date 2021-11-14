@@ -3,16 +3,9 @@ const bcrypt = require('bcryptjs');
 
 const Customer = require('../models/customer.models');
 const Restaurant = require('../models/restaurant.models');
-const {
-  customers,
-  orders,
-  customer_address,
-  fvrts,
-  restaurants,
-  restaurant_imgs,
-  restaurant_dishtypes,
-} = require('../models/data.model');
 const mongoose = require('mongoose');
+
+const { make_request } = require('../kafka/client');
 
 const createCustomer = async (req, res) => {
   try {
@@ -21,7 +14,7 @@ const createCustomer = async (req, res) => {
     }
 
     const oldCust = await Customer.findOne({
-        email: req.body.email,
+      email: req.body.email,
     });
 
     if (oldCust) {
@@ -40,7 +33,7 @@ const createCustomer = async (req, res) => {
       'UberEats',
       {
         expiresIn: '2h',
-      }
+      },
     );
 
     // save customer token
@@ -52,12 +45,12 @@ const createCustomer = async (req, res) => {
 };
 
 const customerLogin = async (req, res) => {
-
-  if (!(req.body.email && req.body.password)) res.status(400).send('All input is required');
+  if (!(req.body.email && req.body.password))
+    res.status(400).send('All input is required');
 
   const cust = await Customer.findOne({
-      email: req.body.email,
-  }).select('password');;
+    email: req.body.email,
+  }).select('password');
 
   if (!cust) {
     res.status(409).send('User does not exist');
@@ -74,7 +67,7 @@ const customerLogin = async (req, res) => {
           'UberEats',
           {
             expiresIn: '2h',
-          }
+          },
         );
         cust.token = token;
         res.status(201).json({ token });
@@ -86,46 +79,36 @@ const customerLogin = async (req, res) => {
 };
 
 const updateCustomer = async (req, res) => {
-  if (String(req.headers.id) !== String(req.params.cid))
-    return res.status(401).send('Unauthorised');
-
-  const cust = await Customer.findOne({
-      _id: mongoose.Types.ObjectId(String(req.params.cid)),
-  });
-
-  if (req.body.email && req.body.email !== cust.email) {
-    const checkCust = await Customer.findOne({
-        email: req.body.email,
-    });
-
-    if (checkCust) {
-      return res.status(403).send({error: 'Customer already exist with given email'});
-    }
-  }
-
-  try {
-    await Customer.findOneAndUpdate(
-      {
-        _id: mongoose.Types.ObjectId(String(req.params.cid)),
-      },
-      {
-        $set: req.body,
+  make_request(
+    'customer.update',
+    { ...req.params, body: req.body, id: req.headers.id },
+    (error, response) => {
+      if (error || !response) {
+        if ('errorStatus' in error) {
+          return res.status(error.errorStatus).json({ error: error.error });
+        }
+        return res.status(500).json({ error: error.message });
       }
-    );
-    return res.status(201).send({message: 'Customer Updated'});
-  } catch (err) {
-    return res.status(404).send(err);
-  }
+      return res.status(200).json({ rest: { ...response } });
+    },
+  );
 };
 
 const addAddress = async (req, res) => {
   try {
-
     if (!req.headers.id || req.headers.role === 'restaurant') {
       return res.status(401).send({ error: 'Unauthorised Access' });
     }
-    if (!(req.body.addressLine && req.body.zipcode && req.body.city && req.body.state && req.body.country)){
-      return res.status(403).send("Provide all Details");
+    if (
+      !(
+        req.body.addressLine &&
+        req.body.zipcode &&
+        req.body.city &&
+        req.body.state &&
+        req.body.country
+      )
+    ) {
+      return res.status(403).send('Provide all Details');
     }
     if (req.headers.role === 'customer') {
       await Customer.findByIdAndUpdate(
@@ -133,8 +116,8 @@ const addAddress = async (req, res) => {
           _id: mongoose.Types.ObjectId(String(req.headers.id)),
         },
         {
-          $push: {addresses: req.body},
-        }
+          $push: { addresses: req.body },
+        },
       );
     }
     res.status(201).send({ msg: 'Address Added' });
@@ -149,7 +132,7 @@ const getAllAddress = async (req, res) => {
 
   try {
     const custAddr = await Customer.findOne({
-        _id: mongoose.Types.ObjectId(req.headers.id),
+      _id: mongoose.Types.ObjectId(req.headers.id),
     });
 
     if (custAddr.addresses.length === 0 || !custAddr) {
@@ -162,15 +145,15 @@ const getAllAddress = async (req, res) => {
 };
 
 const updateAddress = async (req, res) => {
-  const addr = await Customer.findOne(
-  {  _id: mongoose.Types.ObjectId(String(req.headers.id)),
+  const addr = await Customer.findOne({
+    _id: mongoose.Types.ObjectId(String(req.headers.id)),
     'addresses._id': mongoose.Types.ObjectId(String(req.params.aid)),
   });
 
-  if(!addr){
+  if (!addr) {
     return res.status(404).send('Address Does not exist!!');
   }
-  try{
+  try {
     const updObj = {};
     Object.keys(req.body).forEach((ele) => {
       updObj[`addresses.$.${ele}`] = req.body[ele];
@@ -183,18 +166,17 @@ const updateAddress = async (req, res) => {
       },
       {
         $set: updObj,
-      }
+      },
     );
     res.status(201).send('Address Updated');
-
-  }catch(err){
+  } catch (err) {
     res.status(500).send(err);
   }
 };
 
-const deleteAddress = async (req,res) => {
-  if(!req.params.aid){
-   return res.status(404).send('Need Address ID');
+const deleteAddress = async (req, res) => {
+  if (!req.params.aid) {
+    return res.status(404).send('Need Address ID');
   }
 
   const cust = await Customer.findOne({
@@ -205,31 +187,31 @@ const deleteAddress = async (req,res) => {
   if (!cust) return res.status(403).send('Address does not exist');
 
   try {
-      await Customer.findOneAndUpdate({
+    await Customer.findOneAndUpdate(
+      {
         _id: mongoose.Types.ObjectId(String(req.headers.id)),
-        },
-        {
-          $pull: {addresses: {_id: mongoose.Types.ObjectId(req.params.aid)}},
-        }
-      );
+      },
+      {
+        $pull: { addresses: { _id: mongoose.Types.ObjectId(req.params.aid) } },
+      },
+    );
 
     return res.status(201).send('Address deleted');
   } catch (err) {
     return res.status(404).send(err);
   }
-
 };
 const deleteCustomer = async (req, res) => {
   if (!req.params.cid) return res.status(404).send('Need Customer ID');
 
   const cust = await Customer.findOne({
-      _id: mongoose.Types.ObjectId(String(req.params.cid)),
+    _id: mongoose.Types.ObjectId(String(req.params.cid)),
   });
 
   if (!cust) return res.status(403).send('Customer does not exist');
   try {
-      await Customer.findOneAndDelete({
-        _id: mongoose.Types.ObjectId(String(req.params.cid)),
+    await Customer.findOneAndDelete({
+      _id: mongoose.Types.ObjectId(String(req.params.cid)),
     });
 
     return res.status(201).send('Customer deleted');
@@ -238,51 +220,21 @@ const deleteCustomer = async (req, res) => {
   }
 };
 
-const getCustomerProfile = async (req, res) => {
-  const custId = req.headers.id;
-  const cust = await Customer.findOne({
-      _id: mongoose.Types.ObjectId(custId),
-  });
-
-  console.log(cust);
-  if (!cust) {
-    return res.status(404).send('Customer does not exists');
-  }
-  return res.status(201).send(cust);
-};
-
 const getCustomerById = async (req, res) => {
-  try{
-      console.log(req.params.cid);
-      const cust = await Customer.findOne({
-        _id: mongoose.Types.ObjectId(String(req.params.cid)),
-      });
-    
-      if (!cust) {
-        return res.status(404).send('Customer does not exists');
-      }
-      return res.status(201).send(cust);
-  }catch(error){
+  try {
+    console.log(req.params.cid);
+    const cust = await Customer.findOne({
+      _id: mongoose.Types.ObjectId(String(req.params.cid)),
+    });
+
+    if (!cust) {
+      return res.status(404).send('Customer does not exists');
+    }
+    return res.status(201).send(cust);
+  } catch (error) {
     console.log(error);
-    return res.status(500).send({error: 'Error getting Customer by Id'});
+    return res.status(500).send({ error: 'Error getting Customer by Id' });
   }
-};
-
-const getAllCustomers = async (req, res) => {
-  const rid = req.headers.id;
-
-  const custs = await orders.findAll({
-    attributes: ['c_id'],
-    include: [
-      {
-        model: customers,
-      },
-    ],
-    where: {
-      r_id: rid,
-    },
-  });
-  return res.status(201).send(custs);
 };
 
 const addToFavorites = async (req, res) => {
@@ -294,7 +246,7 @@ const addToFavorites = async (req, res) => {
 
   try {
     const findRest = await Restaurant.findOne({
-        _id: mongoose.Types.ObjectId(String(req.body.rid)),
+      _id: mongoose.Types.ObjectId(String(req.body.rid)),
     });
 
     if (!findRest) {
@@ -306,8 +258,8 @@ const addToFavorites = async (req, res) => {
         _id: mongoose.Types.ObjectId(String(req.headers.id)),
       },
       {
-        $push: {favorites: req.body.rid}
-      }
+        $push: { favorites: req.body.rid },
+      },
     );
   } catch (err) {
     return res.status(500).send(err);
@@ -327,9 +279,10 @@ const deleteFromFavorites = async (req, res) => {
     await Customer.findOneAndUpdate(
       {
         _id: mongoose.Types.ObjectId(String(req.headers.id)),
-      },{
-        $pull: {favorites: req.params.rid},
-      }
+      },
+      {
+        $pull: { favorites: req.params.rid },
+      },
     );
   } catch (err) {
     return res.status(500).send(err);
@@ -339,7 +292,7 @@ const deleteFromFavorites = async (req, res) => {
 };
 
 const getAllFavorites = async (req, res) => {
-  console.log(req.headers.id)
+  console.log(req.headers.id);
   if (!req.headers.id) {
     return res.status(404).send({ error: 'Customer Id Not Found' });
   }
@@ -350,10 +303,10 @@ const getAllFavorites = async (req, res) => {
     });
 
     console.log(cust);
-    
+
     const resArray = await Restaurant.find({
-      '_id': {$in : cust.favorites},
-    })
+      _id: { $in: cust.favorites },
+    });
 
     return res.status(200).send(resArray);
   } catch (err) {
@@ -366,9 +319,7 @@ module.exports = {
   customerLogin,
   updateCustomer,
   deleteCustomer,
-  getCustomerProfile,
   getCustomerById,
-  getAllCustomers,
   addAddress,
   getAllAddress,
   addToFavorites,

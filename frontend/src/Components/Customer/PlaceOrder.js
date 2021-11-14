@@ -97,7 +97,7 @@ function PlaceOrder({ match }) {
           headers: {
             Authorization: token,
           },
-        }
+        },
       )
       .then((res) => {
         setNewZipcode(null);
@@ -151,29 +151,25 @@ function PlaceOrder({ match }) {
   const placeOrder = (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-    if (address.length > 0 && deliveryType.length > 0) {
-      axiosConfig
-        .put(
-          `/orders/finalorder/${match.params.oid}`,
-          {
-            addressId: address[0].address,
-            orderType: deliveryType[0].deliveryType,
-            notes: newNotes,
-          },
-          {
-            headers: { Authorization: token },
-          }
-        )
-        .then((res) => {
-          history.push('/customer/dashboard');
-          toast.success('Order Placed!!');
-        })
-        .catch((err) => {
-          toast.error('Error Placing Order');
-        });
-    } else {
-      toast.error('Please select Delivery Address and Delivery Type');
-    }
+
+    let putObj = {};
+    if (address.length > 0) putObj.addressId = address[0].address;
+    if (deliveryType.length > 0)
+      putObj.orderType = deliveryType[0].deliveryType;
+
+    putObj.notes = newNotes;
+
+    axiosConfig
+      .put(`/orders/finalorder/${match.params.oid}`, putObj, {
+        headers: { Authorization: token },
+      })
+      .then((res) => {
+        history.push('/customer/dashboard');
+        toast.success('Order Placed!!');
+      })
+      .catch((err) => {
+        toast.error('Error Placing Order');
+      });
   };
 
   useEffect(() => {
@@ -197,48 +193,48 @@ function PlaceOrder({ match }) {
           }}
         >
           <H3>Add New Address </H3>
-          <FormControl label='Address Line'>
+          <FormControl label="Address Line">
             <Input
-              id='newAddressLine'
-              autoComplete='off'
-              placeholder='Enter Address Line'
+              id="newAddressLine"
+              autoComplete="off"
+              placeholder="Enter Address Line"
               value={newAddressLine}
               onChange={(e) => setNewAddressLine(e.target.value)}
             />
           </FormControl>
-          <FormControl label='Zipcode'>
+          <FormControl label="Zipcode">
             <Input
-              id='zipcode'
-              autoComplete='off'
-              placeholder='Enter Zipcode'
+              id="zipcode"
+              autoComplete="off"
+              placeholder="Enter Zipcode"
               value={newZipcode}
               onChange={(e) => setNewZipcode(e.target.value)}
-              type='Number'
+              type="Number"
             />
           </FormControl>
-          <FormControl label='City'>
+          <FormControl label="City">
             <Input
-              id='city'
-              autoComplete='off'
-              placeholder='Enter City'
+              id="city"
+              autoComplete="off"
+              placeholder="Enter City"
               value={newCity}
               onChange={(e) => setNewCity(e.target.value)}
             />
           </FormControl>
-          <FormControl label='State'>
+          <FormControl label="State">
             <Input
-              id='state'
-              autoComplete='off'
-              placeholder='Enter State'
+              id="state"
+              autoComplete="off"
+              placeholder="Enter State"
               value={newState}
               onChange={(e) => setNewState(e.target.value)}
             />
           </FormControl>
-          <FormControl label='Country'>
+          <FormControl label="Country">
             <Input
-              id='country'
-              autoComplete='off'
-              placeholder='Enter Country'
+              id="country"
+              autoComplete="off"
+              placeholder="Enter Country"
               value={newCountry}
               onChange={(e) => setNewCountry(e.target.value)}
             />
@@ -274,7 +270,7 @@ function PlaceOrder({ match }) {
           </div> */}
           </Drawer>
           <NavigationItem>
-            <a href='/customer/dashboard'>
+            <a href="/customer/dashboard">
               <img src={logo} style={{ width: '120px', height: '70px' }} />
             </a>
           </NavigationItem>
@@ -287,38 +283,38 @@ function PlaceOrder({ match }) {
           {/* <H2>{orderDetails?.restaurant?.name}</H2> */}
           <div style={{ width: '50%', marginTop: '30px' }}>
             <FormControl
-              label='Select Delivery Address'
+              label="Select Delivery Address"
               style={{ marginTop: '30px' }}
             >
               <Select
                 options={addressOptions}
                 value={address}
                 onChange={(e) => setAddress(e.value)}
-                valueKey='address'
-                labelKey='address'
-                placeholder='Select address'
+                valueKey="address"
+                labelKey="address"
+                placeholder="Select address"
               />
             </FormControl>
             <Button onClick={() => setAddressModalIsOpen(true)}>
               Add New Address
             </Button>
             <div style={{ marginTop: '40px' }} />
-            <FormControl label='Notes'>
-            <Input
-              id='notes'
-              autoComplete='off'
-              placeholder='Enter Notes'
-              value={newNotes}
-              onChange={(e) => setNewNotes(e.target.value)}
-            />
+            <FormControl label="Notes">
+              <Input
+                id="notes"
+                autoComplete="off"
+                placeholder="Enter Notes"
+                value={newNotes}
+                onChange={(e) => setNewNotes(e.target.value)}
+              />
             </FormControl>
-            <FormControl label='Select Delivery Type'>
+            <FormControl label="Select Delivery Type">
               <Select
                 options={delTypeOptions}
                 value={deliveryType}
-                valueKey='deliveryType'
-                labelKey='deliveryType'
-                placeholder='Select delivery Type'
+                valueKey="deliveryType"
+                labelKey="deliveryType"
+                placeholder="Select delivery Type"
                 onChange={(e) => setDeliveryType(e.value)}
               />
             </FormControl>
@@ -365,12 +361,15 @@ function PlaceOrder({ match }) {
             </Col>
             <Col style={{ textAlign: 'right' }}>
               {orderDetails ? (
-                <h6>$
+                <h6>
+                  $
                   {parseFloat(orderDetails?.orderDetails?.finalPrice) -
                     parseFloat(orderDetails?.orderDetails?.tax)}
                 </h6>
               ) : null}
-              {orderDetails ? <h6> ${orderDetails?.orderDetails?.tax?.toFixed(2)}</h6> : null}
+              {orderDetails ? (
+                <h6> ${orderDetails?.orderDetails?.tax?.toFixed(2)}</h6>
+              ) : null}
               <h6> $0</h6>
             </Col>
           </Row>

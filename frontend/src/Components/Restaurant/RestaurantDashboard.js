@@ -301,6 +301,8 @@ function RestaurantDashboard() {
                       { city: 'San Jose' },
                       { city: 'San Francisco' },
                       { city: 'San Diego' },
+                      { city: 'Santa Clara' },
+                      { city: 'Dublin' },
                     ]}
                     valueKey="city"
                     labelKey="city"
